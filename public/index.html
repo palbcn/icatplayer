@@ -1,0 +1,27 @@
+<!DOCTYPE html><html lang="en">
+<head>
+<meta charset="utf-8">
+<title>iCat.cat Lo Pere Player</title>
+<link rel="stylesheet" href="style.css">
+<link rel="shortcut icon" href="favicon.ico" />
+</head>
+<body>
+<img id="logo" src="icat.png"></img>
+<div id="playing">
+<div id="playing-info">
+<img id="playing-cover" src="noimage.jpg"></img>
+<p id="playing-artist" class="artist">Currently</p>
+<p id="playing-song" class="song">playing</p>
+</div>
+<div id="player">
+<object type="application/x-shockwave-flash" data="http://statics.catradio.cat/ria/rrp/srp.swf" width="103" height="30">
+<param name="flashvars" value="item=353&amp;skin=http://statics.catradio.cat/ria/rrp/skin_rrp_directe.swf">
+</object>
+</div>
+</div>
+<ul id="played">
+</ul>
+</body>
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+<script src="main.js"></script>
+</html>

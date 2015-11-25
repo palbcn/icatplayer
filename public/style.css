@@ -1,0 +1,117 @@
+/*@import url(https://fonts.googleapis.com/css?family=Slabo+27px);*/
+@import url(https://fonts.googleapis.com/css?family=Roboto);
+
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed, 
+figure, figcaption, footer, header, hgroup, 
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: 100%;
+	font: inherit;
+	vertical-align: baseline;
+}
+
+html {
+  box-sizing: border-box;
+}
+
+*, *:before, *:after {
+  box-sizing: inherit;  margin:0;padding:0;
+}
+
+body { 
+  background: #000; 
+  color: #ccc; 
+  /* "A Better Helvetica" and "Helvetica Neue Alternatives" */
+  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", "TeXGyreHeros", "Roboto", Helvetica, Arial, "Lucida Grande", sans-serif; 
+  font-weight: 300;
+  font-size: 16px;
+}
+
+#logo {
+ float:right;
+ width: 160px;
+ margin-right: 12px; 
+ border-top: 4px solid white;
+ padding: 24px;
+}
+
+#playing { 
+  font-size: 1.618em;  /* golden ratio font scale */
+  background: #333;
+  max-height: 160px;
+  white-space: nowrap;  
+}
+
+#playing-cover { 
+  float:left; 
+  width:200px; 
+  margin-left: 12px;
+  margin-right: 24px;
+  border-top: white solid 4px;
+  padding:24px; 
+}
+
+#playing-artist { color: #fff; padding-top: 24px; }
+#playing-song { color: #ccf; padding-bottom: 12px }
+#player { padding-bottom: 12px; }
+
+ul#played { 
+    clear:both;
+    list-style-type:none;
+    list-style-position:inside;
+    margin-left: 12px;
+    margin-top: 64px;
+  }
+
+  ul#played li {
+   display:inline-block;
+   width: 200px;           /* golden ratio */
+   height: 123px;
+   margin-right: 24px;
+   margin-bottom: 24px;
+   border-top: 1px solid #999;
+   vertical-align: top;
+   padding-top:8px;
+   overflow: hidden;
+  }
+  
+  ul#played li:hover {
+   background-color: #300;
+  }
+  
+    ul#played li img {
+     float:left; 
+     width:92px;
+     padding-right: 8px;
+     clear:both;
+     
+    }
+    
+    ul#played li p {
+      overflow: hidden;
+    }
+         
+    ul#played li p.timestamp {
+     font-size:0.618em;  
+    }
+    
+    ul#played li p.artist {
+     color: #fff;
+    }
+    
+    ul#played li p.song {
+     color: #ccf;
+    }
+    

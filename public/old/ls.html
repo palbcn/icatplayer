@@ -1,0 +1,37 @@
+
+
+<!DOCTYPE html><html lang="en">
+<head>
+<meta charset="utf-8">
+<title>iCat.cat</title>
+<link rel="stylesheet" href="minicat.css">
+<link rel="shortcut icon" href="minicat.ico" />
+</head>
+<body>
+<div id="playing">
+<img src="noimage.jpg"></img>
+<p class="artist">Currently</p>
+<p class="song">playing</p>
+</div>
+<object type="application/x-shockwave-flash" data="http://statics.catradio.cat/ria/rrp/srp.swf" width="103" height="30">
+<param name="flashvars" value="item=353&amp;skin=http://statics.catradio.cat/ria/rrp/skin_rrp_directe.swf">
+</object>
+<li id="played">
+</li>
+</body>
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+<script>
+
+   if (window.localStorage) {
+
+        /// list all keys from object
+        var keys = Object.keys(localStorage);
+
+        for(var i, key; key = keys[i]; i++) {
+            console.log(key + "--------theiiiiiii");
+            var z = localStorage.getItem(key);
+            console.log(z + "--------you keep me satisfied");
+        }
+        
+</script>
+</html>

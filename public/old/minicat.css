@@ -1,0 +1,24 @@
+@import url(https://fonts.googleapis.com/css?family=Slabo+27px);
+
+* { box-sizing: border-box; margin:0;padding:0;}
+
+body { 
+  background: #000; color: #ccc; 
+  font: normal 27px/0.8 "Slabo 27px"; 
+}
+img { 
+  width:200px; float:left; 
+  padding:24px; 
+}
+p {
+ padding:24px 0 0 12px; 
+ text-transform:capitalize
+}
+  p.artist { padding-top:48px; }
+  p.song { color: #ccf;  padding-bottom:24px;}
+ul { 
+  clear:both;
+  padding-left:24px;
+  list-style-type:none;
+  font: normal 14px calibri; 
+}
