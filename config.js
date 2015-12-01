@@ -1,3 +1,3 @@
 module.exports = {
-  file: "c:\\pere\\privat\\musica cine\\icat.txt"
+  file: "c:\\pere\\privat\\musica cine\\icat.json"
 }

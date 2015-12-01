@@ -1,6 +1,4 @@
 
-var lastD = "";
-
 /* insert word breaks in long words at num pos */
 String.prototype.wbr = function(num) {  
   return this.replace(
@@ -9,30 +7,79 @@ String.prototype.wbr = function(num) {
   );
 }
 
+function reloadPlayed(songs) {
+  $("#played").empty();
+  songs.slice(1).map(function(song){
+    $("#played").append(buildSong(song));
+  });
+};
+
+function playedDelete(id) {
+  console.log('delete('+id+')');
+  $.ajax({
+    url: '/played/'+encodeURIComponent(id),
+    type: 'DELETE',
+    success: function(result){ reloadPlayed(result) },
+    error: function(result){ console.log('delete ',result)}
+  });
+}
+
+function playedLike(id) {
+  console.log('like('+id+')');
+  $.ajax({
+    url: '/played/'+encodeURIComponent(id)+'/like',
+    type: 'POST',
+    success: function(result){ reloadPlayed(result) },
+    error: function(result){ console.log('post ',result)}
+  });
+}
+
+function buildSong(song) {
+  var $li=$('<li id="'+song.timestamp+'"/>');
+  var $a=$('<a target="_blank"/>').attr('href',youtubesearch+encodeURIComponent(song.artist+' - '+song.song+' - '));
+  var $img=$('<img/>').attr('src',song.cover).attr('title',song.album);
+  $a.append($img);  
+  $a.append($('<p class="timestamp">').text(new Date(song.timestamp).toLocaleString('en-GB').slice(0,-3)));          
+  $a.append($('<p class="artist">').html(song.artist.wbr(10)));
+  $a.append($('<p class="song">').html(song.song.wbr(10)));
+  $li.append($a);
+  var $iconlike=$('<i class="fa '+
+                     ((song.like)?'fa-thumbs-down':'fa-thumbs-up')+
+                    ' icon-like"/>').hide();         
+  var $icondelete=$('<i class="fa fa-trash icon-delete"/>').hide(); 
+  if (song.like) $li.append('<i class="fa fa-heart icon-fav"/>'); 
+  $li.append($iconlike);
+  $li.append($icondelete);         
+  $iconlike.click(function() { playedLike($(this).parent()[0].id); });
+  $icondelete.click(function(){ playedDelete($(this).parent()[0].id);  });  
+  $li.hover(function(){$iconlike.show(); $icondelete.show();},
+            function(){$iconlike.hide(); $icondelete.hide();});
+  return $li;
+};
+
+function buildPlaying(data) {
+  if (!data.album) data.album=""; 
+  $("#playing-link").attr('href',youtubesearch+encodeURIComponent(data.artist+' - '+data.song+' - '));
+  $("#playing-cover").attr('src',data.cover).attr('title',data.album);
+  $("#playing-artist").text(data.artist);
+  $("#playing-song").text(data.song);
+  document.title = data.artist+'-'+data.song+' @ iCat.cat & Lo Pere';
+}
+
+const youtubesearch="https://www.youtube.com/results?search_query=";
+var lastD = 0;
 function reload(){ 
   $.getJSON('/playing',function(data){
-    if (data!=lastD) {
-      lastD=data;
-      $("#playing-cover").attr('src',data.cover);
-      $("#playing-artist").text(data.artist);
-      $("#playing-song").text(data.song);
-      document.title = data.artist+'-'+data.song+' @ iCat.cat & Lo Pere';
-    
+    if (data.timestamp!=lastD) {
+      lastD=data.timestamp;
+      buildPlaying(data);      
       $.getJSON('/played',function(songs){
-        $("#played").empty();
-        songs.slice(1).map(function(song){
-          var $li=$("<li/>");
-          var $img=$('<img/>').attr('src',song.cover);
-          $li.append($img);  
-          $li.append($('<p class="timestamp">').text(new Date(song.timestamp).toLocaleString('en-GB')));          
-          $li.append($('<p class="artist">').html(song.artist.wbr(10)));
-          $li.append($('<p class="song">').html(song.song.wbr(10)));
-          $("#played").append($li);
-        });
+        reloadPlayed(songs);
       });
     }
   });
 };
+
 
 $(function(){   
   reload();                  // now,.. 

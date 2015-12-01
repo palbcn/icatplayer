@@ -37,19 +37,24 @@ body {
   font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", "TeXGyreHeros", "Roboto", Helvetica, Arial, "Lucida Grande", sans-serif; 
   font-weight: 300;
   font-size: 16px;
+  min-width: 600px;
+}
+
+a {
+  text-decoration: none;
 }
 
 #logo {
  float:right;
- width: 160px;
- margin-right: 12px; 
- border-top: 4px solid white;
- padding: 24px;
+ width: 80px;
+ --margin-right: 12px; 
+ --border-top: 4px solid white;
+ --padding: 24px;
 }
 
 #playing { 
   font-size: 1.618em;  /* golden ratio font scale */
-  background: #333;
+  background: #111;
   max-height: 160px;
   white-space: nowrap;  
 }
@@ -59,7 +64,7 @@ body {
   width:200px; 
   margin-left: 12px;
   margin-right: 24px;
-  border-top: white solid 4px;
+  border-top: red solid 4px;
   padding:24px; 
 }
 
@@ -76,18 +81,20 @@ ul#played {
   }
 
   ul#played li {
+   position:relative;
    display:inline-block;
    width: 200px;           /* golden ratio */
    height: 123px;
-   margin-right: 24px;
-   margin-bottom: 24px;
+   margin-right: 12px;
+   margin-bottom: 12px;
    border-top: 1px solid #999;
    vertical-align: top;
-   padding-top:8px;
+   padding-top: 6px;
    overflow: hidden;
   }
   
-  ul#played li:hover {
+  ul#played li:hover,
+  #playing:hover  {
    background-color: #300;
   }
   
@@ -95,8 +102,7 @@ ul#played {
      float:left; 
      width:92px;
      padding-right: 8px;
-     clear:both;
-     
+     clear:both;    
     }
     
     ul#played li p {
@@ -104,7 +110,8 @@ ul#played {
     }
          
     ul#played li p.timestamp {
-     font-size:0.618em;  
+     font-size:0.618em;
+     color: #999;     
     }
     
     ul#played li p.artist {
@@ -115,3 +122,32 @@ ul#played {
      color: #ccf;
     }
     
+    ul#played li .icon-delete,
+    ul#played li .icon-fav,
+    ul#played li .icon-like {
+       position:absolute;          
+    }
+    
+    ul#played li .icon-delete:hover,
+    ul#played li .icon-like:hover {
+       color: white;     
+       background-color: black;       
+    }
+    
+    ul#played li .icon-delete {
+      right:6px;
+      bottom:6px;
+    }
+    
+    ul#played li .icon-like {
+      left:6px;
+      bottom:6px;
+    }
+    
+    ul#played li .icon-fav {
+      right:6px;
+      top:6px;
+      color: red;
+    }
+ 
+ 
