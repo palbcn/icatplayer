@@ -118,7 +118,7 @@ function reload(){
 }
 
 (function main(){  
-  playedfile = path.normalize(path.resolve(process.argv[2] || process.env.ICATFILE || path.join(os.homedir(),'icat.json')));
+  playedfile = path.normalize(path.resolve(process.argv[2] || process.env.ICAT || path.join(os.homedir(),'icat.json')));
   if (fs.existsSync(playedfile)) {
     fs.readFile(playedfile, "utf-8", function(err,data) {
         var parsed=JSON.parse(data);
