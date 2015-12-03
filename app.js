@@ -1,7 +1,7 @@
 #! node
 /*
  icat directe Server
- Pere Albert, Barcelona. palbcn@yahoo.com
+ Lo Pere, Barcelona. palbcn@yahoo.com
 */
 
 var fs=require('fs');
