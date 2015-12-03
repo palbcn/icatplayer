@@ -4,10 +4,9 @@
  Pere Albert, Barcelona. palbcn@yahoo.com
 */
 
-var config=require('./config');
-
 var fs=require('fs');
 var path=require('path');
+var os=require('os');
 var superagent = require('superagent');
 var $ = require('cheerio');
 var express = require('express');
@@ -15,16 +14,19 @@ var app = express();
 require('pastrings');
 require('padates');
 
+
 const reloadURL = 
   "http://dinamics.catradio.cat/dalet/catradio/icat/v1/refresh_icat.xml";
 const contentURLprefix =
   "http://catradio.cat/icat/standalone/icatPlayer/icatplayer/directe/3/";
 
+var playedfile = 'icat.json'; 
 var played=[];
+var playing={};
 
 function savePlayed() {
-  if (config.file) {
-    fs.writeFileSync(config.file, JSON.stringify(played), "utf-8");
+  if (playedfile) {
+    fs.writeFileSync(playedfile, JSON.stringify(played), "utf-8");
   }; 
 }
  
@@ -44,12 +46,11 @@ function findPlayed(id) {
 }
 
 app.get('/playing', function (req, res) {
-  res.send(played[0]);
+  res.send(playing);
 }); 
 
 app.delete('/played/:id',function(req,res) {
   var index=findPlayed(req.params.id);
-  console.log('delete ',req.params.id,index);
   if (index==-1) {
     res.status(404).send(req.params.id+" not found");
   } else {
@@ -61,7 +62,6 @@ app.delete('/played/:id',function(req,res) {
 
 app.post('/played/:id/:action',function(req,res){
   var index=findPlayed(req.params.id);
-  console.log('post',req.params.action,req.params.id,index); 
   if (index==-1) { 
     res.status(404).send(req.params.id+" not found");
   } else if (req.params.action=="like") {
@@ -97,6 +97,7 @@ function reloadHTML(html) {
     timestamp: Date.now()    
   };
   played.unshift(s);
+  playing=s;
   savePlayed();
   console.log(s.artist+' - '+s.song);
 }
@@ -117,21 +118,25 @@ function reload(){
 }
 
 (function main(){  
-  if (config.file && fs.existsSync(config.file)) {
-    fs.readFile(config.file, "utf-8", function(err,data) {
+  playedfile = path.normalize(path.resolve(process.argv[2] || process.env.ICATFILE || path.join(os.homedir(),'icat.json')));
+  if (fs.existsSync(playedfile)) {
+    fs.readFile(playedfile, "utf-8", function(err,data) {
         var parsed=JSON.parse(data);
         if (Array.isArray(parsed)) { 
           played = parsed;
+          playing = played[0];
         }
     });
+  } else {
+    return console.log('Data file "'+playedfile+'" not found');
   }
  
   reload();                  // now,.. 
   setInterval(reload,10000); // ..and every 10 secs  
 
-  var server = app.listen(3210, function () {
+  var server = app.listen(process.env.PORT || 3210, function () {
     console.log('iCat server is now open for e-business');
-    console.log('for',config.file);
+    console.log('using',playedfile);
     console.log('at localhost:',server.address().port);
   });
  

@@ -9,29 +9,34 @@ String.prototype.wbr = function(num) {
 
 function reloadPlayed(songs) {
   $("#played").empty();
-  songs.slice(1).map(function(song){
+  songs.map(function(song){
     $("#played").append(buildSong(song));
   });
 };
 
 function playedDelete(id) {
-  console.log('delete('+id+')');
+  $('#'+id).hide();
   $.ajax({
     url: '/played/'+encodeURIComponent(id),
     type: 'DELETE',
     success: function(result){ reloadPlayed(result) },
-    error: function(result){ console.log('delete ',result)}
+    error: function(result){ console.log('delete error ',result)}
   });
 }
 
 function playedLike(id) {
-  console.log('like('+id+')');
   $.ajax({
     url: '/played/'+encodeURIComponent(id)+'/like',
     type: 'POST',
     success: function(result){ reloadPlayed(result) },
-    error: function(result){ console.log('post ',result)}
-  });
+    error: function(result){ console.log('post error ',result)}
+  }); 
+  
+  // immediate feedback: if the icon exists, hide it; if it doesn't, create it.
+  if ($('#'+id+' .icon-fav').length==0)
+     $('#'+id).append($('<i class="fa fa-heart icon-fav"/>'))
+  else
+    $('#'+id+' .icon-fav').hide();
 }
 
 function buildSong(song) {
