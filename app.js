@@ -1,6 +1,6 @@
 #! node
 /*
- icat directe
+ icat directe Server
  Pere Albert, Barcelona. palbcn@yahoo.com
 */
 
@@ -11,9 +11,6 @@ var superagent = require('superagent');
 var $ = require('cheerio');
 var express = require('express');
 var app = express();
-require('pastrings');
-require('padates');
-
 
 const reloadURL = 
   "http://dinamics.catradio.cat/dalet/catradio/icat/v1/refresh_icat.xml";
@@ -24,14 +21,22 @@ var playedfile = 'icat.json';
 var played=[];
 var playing={};
 
-function savePlayed() {
-  if (playedfile) {
-    fs.writeFileSync(playedfile, JSON.stringify(played), "utf-8");
-  }; 
+// --- string utils --------------------------------------------------
+// squeeze all runs of repeated whitespace with a single whitespace
+String.prototype.squeeze = function() {
+  return this.replace(/\s+/g,' ').trim(); 
 }
- 
+
+String.prototype.toTitleCase = function()
+{
+  return this.toLowerCase().replace(/^(.)|\s(.)/g, 
+      function($1) { return $1.toUpperCase(); });
+}
+
+// --- express middleware --------------------------------------------------
 app.use(express.static(__dirname + '/public'));
 
+// --- express routes --------------------------------------------------
 app.get('/played', function (req, res) {
   res.send(played);
 }); 
@@ -56,7 +61,7 @@ app.delete('/played/:id',function(req,res) {
   } else {
     played.splice(index,1);
     res.send(played);
-    savePlayed();
+    fs.writeFileSync(playedfile, JSON.stringify(played), "utf-8");
   }  
 });
 
@@ -67,12 +72,13 @@ app.post('/played/:id/:action',function(req,res){
   } else if (req.params.action=="like") {
     played[index].like=!played[index].like;
     res.send(played);
-    savePlayed();
+    fs.writeFileSync(playedfile, JSON.stringify(played), "utf-8");
   } else {
     res.status(401).send("invalid request "+req.params.action);
   }
 });
 
+// --- extract remote content -------------------------------------------
 function loadFromURL(url,cb){
   superagent
     .get(url) 
@@ -90,15 +96,15 @@ function reloadHTML(html) {
   var cover=$content.find("img").attr('src');
   var album=$content.find("img").attr('alt');
   var s= { 
-    artist: song[1] ? song[1].squeeze().toProperCase(): "?", 
-    song: song[0] ? song[0].squeeze().toProperCase(): "?", 
-    album: album ? album.toProperCase():"",
+    artist: song[1] ? song[1].squeeze().toTitleCase(): "?", 
+    song: song[0] ? song[0].squeeze().toTitleCase(): "?", 
+    album: album ? album.toTitleCase():"",
     cover: cover,
     timestamp: Date.now()    
   };
   played.unshift(s);
   playing=s;
-  savePlayed();
+  fs.writeFileSync(playedfile, JSON.stringify(played), "utf-8");
   console.log(s.artist+' - '+s.song);
 }
 
@@ -116,6 +122,8 @@ function reloadXML(xml){
 function reload(){ 
   loadFromURL(reloadURL, reloadXML); 
 }
+
+// --- main --------------------------------------------------------
 
 (function main(){  
   playedfile = path.normalize(path.resolve(process.argv[2] || process.env.ICAT || path.join(os.homedir(),'icat.json')));
