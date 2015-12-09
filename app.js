@@ -84,13 +84,15 @@ function loadFromURL(url,cb){
     .get(url) 
     .set({"Accept-Encoding" : "gzip,sdch"})    
     .end(function(err,data){
-      cb(data.text);
+      if (err) cb(err); else cb(err,data.text);
     });
 };
 
 var lastT=0;
 
-function reloadHTML(html) {
+function reloadHTML(err,html) {
+  if (err) return console.log(err);
+  
   var $content=$('<div>'+html+'</div>');
   var song=$content.find("h1").text().split('/'); 
   var cover=$content.find("img").attr('src');
@@ -108,7 +110,9 @@ function reloadHTML(html) {
   console.log(s.artist+' - '+s.song);
 }
 
-function reloadXML(xml){
+function reloadXML(err,xml){
+  if (err) return console.log(err);
+  
   var $xml=$(xml);
   var itemIdBloc =$xml.find('#info').attr("idbloc");
   var itemT =$xml.find('#info').attr("t"); 
@@ -136,7 +140,9 @@ function reload(){
         }
     });
   } else {
-    return console.log('Data file "'+playedfile+'" not found');
+    fs.writeFileSync(playedfile, JSON.stringify(played), "utf-8");
+    if (!fs.existsSync(playedfile)) 
+      return console.log("Can't create "+playedfile);
   }
  
   reload();                  // now,.. 

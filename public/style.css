@@ -65,20 +65,27 @@ a {
   padding:24px; 
 }
 
-#playing-artist { color: #fff; padding-top: 24px; }
+#playing-label { padding-top: 24px; font-size: 12px; color: #999}
+#playing-artist { color: #fff; }
 #playing-song { color: #ccf; padding-bottom: 12px }
 
 #player { padding-bottom: 12px; }
 
-ul#played { 
+#played-label {
+ clear: both;
+ font-size: 12px;
+ padding-left: 12px;
+ color: #999;
+}
+
+#played { 
     clear:both;
     list-style-type:none;
     list-style-position:inside;
     margin-left: 12px;
-    margin-top: 64px;
   }
 
-  ul#played li {
+  #played li {
    position:relative;
    display:inline-block;
    width: 200px;           /* golden ratio */
@@ -91,64 +98,62 @@ ul#played {
    overflow: hidden;
   }
   
-  ul#played li:hover,
+  #played li:hover,
   #playing:hover  {
    background-color: #300;
   }
   
-    ul#played li img {
+    #played li img {
      float:left; 
      width:92px;
      padding-right: 8px;
      clear:both;    
     }
     
-    ul#played li p {
+    #played li p {
       overflow: hidden;
     }
          
-    ul#played li p.timestamp {
+    #played li p.timestamp {
      font-size:0.618em;
      color: #999;     
     }
     
-    ul#played li p.artist {
+    #played li p.artist {
      color: #fff;
     }
     
-    ul#played li p.song {
+    #played li p.song {
      color: #ccf;
     }
     
-    ul#played li .icon-delete,
-    ul#played li .icon-like {
+    #played li .icon-delete,
+    #played li .icon-like {
        position:absolute; 
        color: #999; 
        padding:6px;
        border-radius: 12px;
     }
     
-    ul#played li .icon-delete:hover,
-    ul#played li .icon-like:hover {
+    #played li .icon-delete:hover,
+    #played li .icon-like:hover {
        color: white;    
        background-color: #633;       
     }
     
-    ul#played li .icon-delete {
+    #played li .icon-delete {
       right:0px;
       bottom:0px;
     }
     
-    ul#played li .icon-like {
+    #played li .icon-like {
       left:0px;
       bottom:0px;
     }
     
-    ul#played li .icon-fav {
+    #played li .icon-fav {
       position:absolute;
       right:6px;
       top:6px;
       color: red;
     }
- 
- 
