@@ -3,7 +3,7 @@
 String.prototype.wbr = function(num) {  
   return this.replace(
     RegExp("(\\w{" + num + "})(\\w)", "g"), 
-    function(all,text,char){return text + "<wbr>" + char;}
+    function(match,submatch1,submatch2){return submatch1 + "<wbr>" + submatch2}
   );
 }
 
@@ -64,7 +64,7 @@ function buildSong(song) {
 
 function buildPlaying(data) {
   if (!data.album) data.album=""; 
-  $("#playing-link").attr('href',youtubesearch+encodeURIComponent(data.artist+' - '+data.song+' - '));
+  $("#playing-link").attr('href','http://catradio.cat'+data.link);
   $("#playing-cover").attr('src',data.cover).attr('title',data.album);
   $("#playing-artist").text(data.artist);
   $("#playing-song").text(data.song);

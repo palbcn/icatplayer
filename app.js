@@ -90,18 +90,28 @@ function loadFromURL(url,cb){
 
 var lastT=0;
 
+function adjustAlbum(s,a) {
+  var r =s.replace(/^\s*portada del disc\s+/i,""); 
+  return r.replace(new RegExp('\\s*de '+a+'\\s*$',"i"),"");
+};
+
+
 function reloadHTML(err,html) {
   if (err) return console.log(err);
   
   var $content=$('<div>'+html+'</div>');
-  var song=$content.find("h1").text().split('/'); 
+  var songwords=$content.find("h1").text().split('/'); 
+  var artist = songwords[1] ? songwords[1].squeeze().toTitleCase(): "?"; 
+  var song = songwords[0] ? songwords[0].squeeze().toTitleCase(): "?";
   var cover=$content.find("img").attr('src');
   var album=$content.find("img").attr('alt');
+  var link=$content.find("a").attr('href');
   var s= { 
-    artist: song[1] ? song[1].squeeze().toTitleCase(): "?", 
-    song: song[0] ? song[0].squeeze().toTitleCase(): "?", 
-    album: album ? album.toTitleCase():"",
+    artist: artist, 
+    song: song, 
+    album: album ? adjustAlbum(album,artist).toTitleCase():"",
     cover: cover,
+    link: link,
     timestamp: Date.now()    
   };
   played.unshift(s);
@@ -130,14 +140,17 @@ function reload(){
 // --- main --------------------------------------------------------
 
 (function main(){  
-  playedfile = path.normalize(path.resolve(process.argv[2] || process.env.ICAT || path.join(os.homedir(),'icat.json')));
+  playedfile = path.normalize(path.resolve(
+    process.argv[2] || 
+    process.env.ICAT || 
+    path.join(os.homedir(),'icat.json')));
   if (fs.existsSync(playedfile)) {
     fs.readFile(playedfile, "utf-8", function(err,data) {
-        var parsed=JSON.parse(data);
-        if (Array.isArray(parsed)) { 
-          played = parsed;
-          playing = played[0];
-        }
+      var parsed=JSON.parse(data);
+      if (Array.isArray(parsed)) { 
+        played = parsed;
+        playing = played[0];
+      }
     });
   } else {
     fs.writeFileSync(playedfile, JSON.stringify(played), "utf-8");
