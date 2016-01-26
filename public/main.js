@@ -52,11 +52,18 @@ function buildSong(song) {
                      ((song.like)?'fa-thumbs-down':'fa-thumbs-up')+
                     ' icon-like"/>').hide();         
   var $icondelete=$('<i class="fa fa-trash icon-delete"/>').hide(); 
-  if (song.like) $li.append('<i class="fa fa-heart icon-fav"/>'); 
   $li.append($iconlike);
-  $li.append($icondelete);         
+  $li.append($icondelete); 
+  
   $iconlike.click(function() { playedLike($(this).parent()[0].id); });
-  $icondelete.click(function(){ playedDelete($(this).parent()[0].id);  });  
+  $icondelete.click(function(){ playedDelete($(this).parent()[0].id);  }); 
+  
+  if (song.like) {
+     var $iconfav=$('<i class="fa fa-heart icon-fav"/>');   
+     $li.append($iconfav); 
+     $iconfav.click(function() { playedLike($(this).parent()[0].id); });
+  };
+  
   $li.hover(function(){$iconlike.show(); $icondelete.show();},
             function(){$iconlike.hide(); $icondelete.hide();});
   return $li;

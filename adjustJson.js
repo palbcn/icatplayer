@@ -5,7 +5,8 @@ var fs=require('fs');
 
 function adjustAlbum(s,a) {
   var r =s.replace(/^\s*portada del disc\s+/i,""); 
-  return r.replace(new RegExp('\\s*de '+a+'\\s*$',"i"),"");
+  //return r.replace(new RegExp('\\s*de '+a+'\\s*$',"i"),"");
+  return r.replace(new RegExp('\\s*(de |d\'|d\' )'+a+'\\s*$',"i"),"");
 };
 
 function adjustsong(s) {
