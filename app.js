@@ -41,9 +41,18 @@ app.get('/played', function (req, res) {
   res.send(played);
 }); 
 
-function findPlayed(id) {
-  for (var i=0,l=played.length; i<l; i++) {
-    if (played[i].timestamp==id) {
+function findSongInList(song,list) {
+  for (var i=0,l=list.length; i<l; i++) {
+    if ((list[i].song==song.song)&&(list[i].artist==song.artist)) {
+      return i;
+    }
+  }
+  return -1;
+}
+
+function findIdInList(id,list) {
+  for (var i=0,l=list.length; i<l; i++) {
+    if (list[i].timestamp==id) {
       return i;
     }
   }
@@ -55,7 +64,7 @@ app.get('/playing', function (req, res) {
 }); 
 
 app.delete('/played/:id',function(req,res) {
-  var index=findPlayed(req.params.id);
+  var index=findIdInList(req.params.id,played);
   if (index==-1) {
     res.status(404).send(req.params.id+" not found");
   } else {
@@ -117,8 +126,10 @@ function reloadHTML(err,html) {
     album: album ? adjustAlbum(album,artist).toTitleCase():"",
     cover: cover,
     link: link,
-    timestamp: Date.now()    
+    timestamp: Date.now()  
   };
+  var idx=findSongInList(s,played); 
+  s.like = (idx==-1) ? false : played[idx].like;  
   played.unshift(s);
   playing=s;
   fs.writeFileSync(playedfile, JSON.stringify(played), "utf-8");
