@@ -71,6 +71,11 @@ app.post('/played/:id/:action',function(req,res){
     res.status(404).send(req.params.id+" not found");
   } else if (req.params.action=="like") {
     played[index].like=!played[index].like;
+    var o=played[index];
+    //populate all over the songs
+    played.map(function(s){
+      if ((o.song==s.song) && (o.artist==s.artist)) s.like=o.like;
+    });
     res.send(played);
     fs.writeFileSync(playedfile, JSON.stringify(played), "utf-8");
   } else {
