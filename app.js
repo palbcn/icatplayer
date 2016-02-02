@@ -75,7 +75,7 @@ app.delete('/played/:id',function(req,res) {
 });
 
 app.post('/played/:id/:action',function(req,res){
-  var index=findPlayed(req.params.id);
+  var index=findIdInList(req.params.id,played);
   if (index==-1) { 
     res.status(404).send(req.params.id+" not found");
   } else if (req.params.action=="like") {

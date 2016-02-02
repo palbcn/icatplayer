@@ -48,10 +48,10 @@ function buildSong(song) {
   $a.append($('<p class="artist">').html(song.artist.wbr(10)));
   $a.append($('<p class="song">').html(song.song.wbr(10)));
   $li.append($a);
-  var $iconlike=$('<i class="fa '+
+  var $iconlike=$('<i title="'+((song.like)?'unlike':'like')+'" class="fa '+
                      ((song.like)?'fa-thumbs-down':'fa-thumbs-up')+
                     ' icon-like"/>').hide();         
-  var $icondelete=$('<i class="fa fa-trash icon-delete"/>').hide(); 
+  var $icondelete=$('<i title="delete" class="fa fa-trash icon-delete"/>').hide(); 
   $li.append($iconlike);
   $li.append($icondelete); 
   
