@@ -17,30 +17,11 @@ const reloadURL =
 const contentURLprefix =
   "http://catradio.cat/icat/standalone/icatPlayer/icatplayer/directe/3/";
 
+var played=[];  // previously played songs list
+var playing={}; // currently playing song
 var playedfile = 'icat.json'; 
-var played=[];
-var playing={};
 
-// --- string utils --------------------------------------------------
-// squeeze all runs of repeated whitespace with a single whitespace
-String.prototype.squeeze = function() {
-  return this.replace(/\s+/g,' ').trim(); 
-}
-
-String.prototype.toTitleCase = function()
-{
-  return this.toLowerCase().replace(/^(.)|\s(.)/g, 
-      function($1) { return $1.toUpperCase(); });
-}
-
-// --- express middleware --------------------------------------------------
-app.use(express.static(__dirname + '/public'));
-
-// --- express routes --------------------------------------------------
-app.get('/played', function (req, res) {
-  res.send(played);
-}); 
-
+// --- played list utils  ----------------------------------------------
 function findSongInList(song,list) {
   for (var i=0,l=list.length; i<l; i++) {
     if ((list[i].song==song.song)&&(list[i].artist==song.artist)) {
@@ -59,6 +40,14 @@ function findIdInList(id,list) {
   return -1;
 }
 
+// --- express middleware --------------------------------------------------
+app.use(express.static(__dirname + '/public'));
+
+// --- express routes --------------------------------------------------
+app.get('/played', function (req, res) {
+  res.send(played);
+}); 
+
 app.get('/playing', function (req, res) {
   res.send(playing);
 }); 
@@ -68,9 +57,11 @@ app.delete('/played/:id',function(req,res) {
   if (index==-1) {
     res.status(404).send(req.params.id+" not found");
   } else {
+    console.time('delete '+req.params.id);
     played.splice(index,1);
     res.send(played);
     fs.writeFileSync(playedfile, JSON.stringify(played), "utf-8");
+    console.timeEnd('delete '+req.params.id);
   }  
 });
 
@@ -79,6 +70,7 @@ app.post('/played/:id/:action',function(req,res){
   if (index==-1) { 
     res.status(404).send(req.params.id+" not found");
   } else if (req.params.action=="like") {
+    console.time('like '+req.params.id);
     played[index].like=!played[index].like;
     var o=played[index];
     //populate all over the songs
@@ -87,6 +79,7 @@ app.post('/played/:id/:action',function(req,res){
     });
     res.send(played);
     fs.writeFileSync(playedfile, JSON.stringify(played), "utf-8");
+    console.timeEnd('like '+req.params.id);
   } else {
     res.status(401).send("invalid request "+req.params.action);
   }
@@ -102,51 +95,68 @@ function loadFromURL(url,cb){
     });
 };
 
-var lastT=0;
+function logerror(err) {
+  console.error(err.response
+    ?err.response.request.method+' '+err.response.request.url+' '+err.status
+    :err); 
+}
+
+function squeeze(s) {
+  return s.replace(/\s+/g,' ').trim(); 
+}
+
+function toTitleCase(s) {
+  return s.toLowerCase().replace(/^(.)|\s(.)/g, 
+      function($1) { return $1.toUpperCase(); });
+}
 
 function adjustAlbum(s,a) {
   var r =s.replace(/^\s*portada del disc\s+/i,""); 
-  return r.replace(new RegExp('\\s*(de |d\'|d\' )'+a+'\\s*$',"i"),"");
+  r = r.replace(new RegExp('\\s*(de |d\'|d\' )'+a+'\\s*$',"i"),"");
+  return toTitleCase(r);
 };
 
-
+// ---- reload content html ----
 function reloadHTML(err,html) {
-  if (err) return console.log(err);
-  
+  if (err) return logerror(err);
+   
   var $content=$('<div>'+html+'</div>');
-  var songwords=$content.find("h1").text().split('/'); 
-  var artist = songwords[1] ? songwords[1].squeeze().toTitleCase(): "?"; 
-  var song = songwords[0] ? songwords[0].squeeze().toTitleCase(): "?";
+  var songTitleSlashArtist=$content.find("h1").text();
+  var songTitleArtist=songTitleSlashArtist.split('/'); 
+  var artist = songTitleArtist[1] ? toTitleCase(squeeze(songTitleArtist[1])): "?"; 
+  var title = songTitleArtist[0] ? toTitleCase(squeeze(songTitleArtist[0])): "?";
   var cover=$content.find("img").attr('src');
   var album=$content.find("img").attr('alt');
   var link=$content.find("a").attr('href');
   var s= { 
     artist: artist, 
-    song: song, 
-    album: album ? adjustAlbum(album,artist).toTitleCase():"",
+    song: title, 
+    album: album ? adjustAlbum(album,artist):"",
     cover: cover,
     link: link,
     timestamp: Date.now()  
   };
+  console.time(artist+' - '+title);
   var idx=findSongInList(s,played); 
   s.like = (idx==-1) ? false : played[idx].like;  
-  played.unshift(s);
-  playing=s;
-  fs.writeFileSync(playedfile, JSON.stringify(played), "utf-8");
-  console.log(s.artist+' - '+s.song);
+  played.unshift(s); // insert in played list
+  playing=s;         // show as currently played
+  fs.writeFileSync(playedfile, JSON.stringify(played), "utf-8"); // save to disk
+  console.timeEnd(artist+' - '+title);
 }
 
+// ---- reload info xml ----
+var lastT=0;
+
 function reloadXML(err,xml){
-  if (err) return console.log(err);
-  
+  if (err) return logerror(err); 
   var $xml=$(xml);
   var itemIdBloc =$xml.find('#info').attr("idbloc");
   var itemT =$xml.find('#info').attr("t"); 
-  if (itemT!=lastT) {
+  if (itemT!=lastT) {   // info idblock t has changed ?
     lastT = itemT;
-    var contentURL = contentURLprefix+itemIdBloc; 
-    loadFromURL(contentURL, reloadHTML);
-  };  
+    loadFromURL(contentURLprefix+itemIdBloc, reloadHTML);
+  }; 
 };
 
 function reload(){ 
@@ -171,7 +181,7 @@ function reload(){
   } else {
     fs.writeFileSync(playedfile, JSON.stringify(played), "utf-8");
     if (!fs.existsSync(playedfile)) 
-      return console.log("Can't create "+playedfile);
+      return console.error("Can't create %s",playedfile);
   }
  
   reload();                  // now,.. 

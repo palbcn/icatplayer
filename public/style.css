@@ -78,13 +78,24 @@ a {
  color: #999;
 }
 
+#overlay {
+  background-color: black;
+  opacity: 0.8; 
+  cursor: wait;
+  position:absolute;
+  top:160px;
+  left:0;
+  width:100%;
+  height:100%;
+}
+
 #played { 
     clear:both;
     list-style-type:none;
     list-style-position:inside;
     margin-left: 12px;
   }
-
+  
   #played li {
    position:relative;
    display:inline-block;
@@ -105,9 +116,11 @@ a {
   
     #played li img {
      float:left; 
-     width:92px;
-     padding-right: 8px;
-     clear:both;    
+     width: 84px;
+     height: 84px;
+     margin-right: 8px;
+     object-fit: cover;
+     clear:both;
     }
     
     #played li p {
@@ -127,21 +140,24 @@ a {
      color: #ccf;
     }
     
-    #played li .icon-delete,
+    #played li .icon-remove,
     #played li .icon-like {
        position:absolute; 
        color: #999; 
+       height:28px; width:28px;
        padding:6px;
-       border-radius: 12px;
+       --border-radius: 50%;
+       text-align: center;
+       vertical-align: middle;
     }
     
-    #played li .icon-delete:hover,
+    #played li .icon-remove:hover,
     #played li .icon-like:hover {
        color: white;    
        background-color: #633;       
     }
     
-    #played li .icon-delete {
+    #played li .icon-remove {
       right:0px;
       bottom:0px;
     }
@@ -151,9 +167,19 @@ a {
       bottom:0px;
     }
     
+    .icon-remove:before {
+      /* fa-trash \f1f8 or fa-ban \f05e or fa-times \f00d or ... ??? */
+      content: "\f00d";
+    }
+        
     #played li .icon-fav {
       position:absolute;
       right:6px;
       top:6px;
-      color: red;
     }
+    .icon-fav:before {
+       content: "\f005";
+       color: yellow;
+    }
+    
+    
