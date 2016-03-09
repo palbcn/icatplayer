@@ -5,7 +5,7 @@ var fs=require('fs');
 
 function findSongInList(song,list) {
   for (var i=0,l=list.length; i<l; i++) {
-    if ((list[i].song==song.song)&&(list[i].artist==song.artist)) {
+    if ((list[i].title==song.title)&&(list[i].artist==song.artist)) {
       return i;
     }
   }

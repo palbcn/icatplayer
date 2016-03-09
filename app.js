@@ -24,7 +24,7 @@ var playedfile = 'icat.json';
 // --- played list utils  ----------------------------------------------
 function findSongInList(song,list) {
   for (var i=0,l=list.length; i<l; i++) {
-    if ((list[i].song==song.song)&&(list[i].artist==song.artist)) {
+    if ((list[i].title==song.title)&&(list[i].artist==song.artist)) {
       return i;
     }
   }
@@ -89,7 +89,7 @@ app.post('/played/:id/:action',function(req,res){
     var o=played[index];
     //populate all over the songs
     played.map(function(s){
-      if ((o.song==s.song) && (o.artist==s.artist)) s.like=o.like;
+      if ((o.title==s.title) && (o.artist==s.artist)) s.like=o.like;
     });
     res.send(played);
     fs.writeFileSync(playedfile, JSON.stringify(played), "utf-8");
@@ -144,7 +144,7 @@ function reloadHTML(err,html) {
   var link=$content.find("a").attr('href');
   var s= { 
     artist: artist, 
-    song: title, 
+    title: title, 
     album: album ? adjustAlbum(album,artist):"",
     cover: cover,
     link: link,

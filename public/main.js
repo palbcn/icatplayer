@@ -76,12 +76,12 @@ function playedLike(id) {
 
 function buildSong(song) {
   var $li=$('<li id="'+song.timestamp+'"/>');
-  var $a=$('<a target="_blank"/>').attr('href',youtubesearch+encodeURIComponent(song.artist+' - '+song.song+' - '));
+  var $a=$('<a target="_blank"/>').attr('href',youtubesearch+encodeURIComponent(song.artist+' - '+song.title+' - '));
   var $img=$('<img/>').attr('src',song.cover).attr('title',song.album);
   $a.append($img);  
   $a.append($('<p class="timestamp">').text(new Date(song.timestamp).toLocaleString('en-GB').slice(0,-3)));          
   $a.append($('<p class="artist">').html(song.artist.wbr(10)));
-  $a.append($('<p class="song">').html(song.song.wbr(10)));
+  $a.append($('<p class="song">').html(song.title.wbr(10)));
   $li.append($a);
   var $iconlike=$('<i title="'+((song.like)?'unlike':'like')+'" class="fa '+
                      ((song.like)?'fa-thumbs-down':'fa-thumbs-up')+
@@ -109,8 +109,8 @@ function buildPlaying(data) {
   $("#playing-link").attr('href','http://catradio.cat'+data.link);
   $("#playing-cover img").attr('src',data.cover).attr('title',data.album);
   $("#playing-artist").text(data.artist);
-  $("#playing-song").text(data.song);
-  document.title = data.artist+'-'+data.song+' @ iCat.cat & Lo Pere';
+  $("#playing-song").text(data.title);
+  document.title = data.artist+'-'+data.title+' @ iCat.cat & Lo Pere';
 }
 
 /* useless
