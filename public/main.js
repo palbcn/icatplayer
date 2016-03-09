@@ -1,3 +1,4 @@
+/* Pere Albert, Barcelona. palbcn@yahoo.com */
 
 /* insert word breaks in long words at num pos */
 String.prototype.wbr = function(num) {  
@@ -106,7 +107,7 @@ function buildSong(song) {
 function buildPlaying(data) {
   if (!data.album) data.album=""; 
   $("#playing-link").attr('href','http://catradio.cat'+data.link);
-  $("#playing-cover").attr('src',data.cover).attr('title',data.album);
+  $("#playing-cover img").attr('src',data.cover).attr('title',data.album);
   $("#playing-artist").text(data.artist);
   $("#playing-song").text(data.song);
   document.title = data.artist+'-'+data.song+' @ iCat.cat & Lo Pere';
@@ -146,7 +147,7 @@ function reload(){
 }
   
 
-$(function(){   
+$(function(){  // kick off
   reload();                  // now,.. 
   setInterval(reload,10000); // ..and every 10 secs   
 });

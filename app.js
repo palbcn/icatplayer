@@ -40,8 +40,22 @@ function findIdInList(id,list) {
   return -1;
 }
 
-// --- express middleware --------------------------------------------------
+// ---------------------------------------------
 app.use(express.static(__dirname + '/public'));
+
+// ---------------------------------------------
+// vendor libraries and common assets 
+// - in development they are in two well known global locations:
+//   vendor should be outside the backed up filesets, assets should be not.
+// - in production assets are deployed in public 
+// - and vendor should not be needded as resources should be loaded from provider cdns
+if (app.get('env') =='development') {
+ app.use('/vendor',express.static('/temp/vendor'));
+ app.use('/assets',express.static('/temp/assets'));
+} else {
+ app.use('/vendor',express.static(__dirname + '/public/vendor'));
+ app.use('/assets',express.static(__dirname + '/public/assets')); 
+}
 
 // --- express routes --------------------------------------------------
 app.get('/played', function (req, res) {
