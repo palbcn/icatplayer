@@ -1,0 +1,78 @@
+<!DOCTYPE html><html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Lo Pere Favorite Songs</title>
+<style>
+body { font-family: sans-serif; --max-width:600px; margin:0; }
+h1 { text-align: center; background-color: darkred; color: white; margin: 0; padding:10px }
+nav { font-size: 1rem; }
+ul { margin:0px; padding:0; }
+li { display:block; position:relative; 
+ height: 60px; margin: 0px; padding:12px; overflow: hidden; vertical-align: top; border-bottom: 1px solid darkgrey}
+li p { margin:0; padding:0 }
+li p.index { position:absolute; font-size:0.8rem; left:6px; top:6px; color: dark-grey }
+li p.artist { padding-top:12px; font-weight:bold }
+li p.title { }
+a { color: #ccf; text-decoration:none; }
+</style>
+</head>
+<body>
+<main>
+<h1>Lo Pere Favorite Songs
+<nav>
+<a href="#" id="by-artist">By artist</a> | 
+<a href="#" id="by-title">By title</a> | 
+<a href="#" id="by-date">By date</a>
+</nav> 
+</h1>
+<ul id="favorites">
+</ul>
+</main>
+</body>
+<script src="vendor/jquery/dist/jquery.min.js"></script>
+<script>
+
+function show(favs){
+  $('#favorites').empty();
+  favs.map(function(fav,idx){
+    var $li = $('<li />');
+    $li.append($('<p class="index" />').text(''+(idx+1)+'  ('+(fav.index+1)+')'));
+    $li.append($('<p class="artist" />').text(fav.artist));
+    $li.append($('<p class="title" />').text(fav.title));
+    $('#favorites').append($li);
+  })
+}
+
+function byArtist(favs){
+  return favs.sort (function(f1,f2) { 
+    return f1.artist.localeCompare(f2.artist, { sensitivity: 'base' })
+  }) 
+};
+function byTitle(favs){
+  return favs.sort (function(f1,f2) { 
+    return f1.title.localeCompare(f2.title, { sensitivity: 'base' })
+  }) 
+};
+function byDate(favs){
+  return favs.sort (function(f1,f2) { 
+    return f1.index-f2.index;
+  }) 
+};
+
+$(function(){
+  var favorites=[];
+  $("#by-artist").click(function(){ show(byArtist(favorites)); });
+  $("#by-title").click(function(){ show(byTitle(favorites)); });
+  $("#by-date").click(function(){ show(byDate(favorites)); });
+  
+  $.ajax({
+    dataType: 'json',
+    url: '/favorites',
+    success: function(favs){
+      favorites = favs.map( (f,idx)=>{ f.index=idx; return f;});
+      show(byArtist(favorites));
+    }
+  })
+})
+</script>
+</html>

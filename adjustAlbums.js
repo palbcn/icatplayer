@@ -33,8 +33,3 @@ function adjustsong(s) {
     }
   });
 })();
-
-
-
-  
-  

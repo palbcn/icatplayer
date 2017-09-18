@@ -21,20 +21,13 @@ function findSongInList(song,list) {
   if (!fs.existsSync(infile)) throw (infile+' not found');
   if (fs.existsSync(outfile)) throw (outfile+' already exists');
   
-  fs.readFile(infile, "utf-8", function(err,data) {
+  fs.readFile(infile, "utf-8", (err,data) => {
     var parsed=JSON.parse(data);
     if (!Array.isArray(parsed)) throw('invalid '+infile)
      
     var songs = parsed;
-    var liked = songs.filter(function(s){ return s.like });
-    songs.map(function(s){ s.like=(findSongInList(s,liked)!=-1) });
-    fs.writeFile(outfile, JSON.stringify(songs), "utf-8", function(){
-      console.log('done');
-    });
+    var liked = songs.filter( s => s.like );
+    songs.map(  s  =>  s.like=(findSongInList(s,liked)!=-1) );
+    fs.writeFile(outfile, JSON.stringify(songs), "utf-8", () => console.log('done') );
   });
 })(process.argv[2],process.argv[3]);
-
-
-
-  
-  

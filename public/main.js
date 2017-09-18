@@ -1,21 +1,27 @@
-/* Pere Albert, Barcelona. palbcn@yahoo.com */
+/* 
+  icat client code 
+  Pere Albert, Barcelona <palbcn@yahoo.com> 
+  Copyright (C) 2016. All Rights Reserved.
+*/
 
-/* insert word breaks in long words at num pos */
-String.prototype.wbr = function(num) {  
-  return this.replace(
-    RegExp("(\\w{" + num + "})(\\w)", "g"), 
-    function(match,submatch1,submatch2){return submatch1 + "<wbr>" + submatch2}
-  );
-}
-
-function reloadPlayed(songs) {
-  $("#played").empty();
-  songs.map(function(song){
-    $("#played").append(buildSong(song));
-  });
+var persist = { 
+  songs: [], 
+  favorites: [] 
 };
 
-/* deprecated
+/* ----------------- insert word breaks in long words at num pos --- */
+String.prototype.wbr = function(num) {  
+  var r =  this.replace ( RegExp("(\\w{" + num + "})(\\w)", "g"),
+    function(match,submatch1,submatch2){
+      return submatch1 + "<wbr>" + submatch2
+    }
+  )
+  return r
+}
+
+/* ----------------- show feedback for long operations --- */
+
+/* deprecated, use 
 function gray() {
  $("body").append("<div id=\"overlay\"/>"); 
 }
@@ -23,25 +29,37 @@ function ungray() {
  $("#overlay").remove(); 
 }*/
 
-
-function deactivateUserInteraction(){
+function activateUserInteraction ( setunset ) {
+ 
  // we could use different strategies. 
  // here we just change the visibility of the action icons.
-  // debug $("body").css("background-color","white");
-  $(".icon-like , .icon-remove").each(function() {
-    $(this).css("visibility","hidden");
-  });
-  // and change the pointer
-  $("body").css("cursor","progress");
+  
+  if (setunset) {    // when true, reactivate
+    $(".icon-like , .icon-remove").each(function() {
+      $(this).css("visibility","visible") 
+    })
+    $("body").css("cursor","auto")
+   
+  } else {          // when false, deactivate
+    $(".icon-like , .icon-remove").each(function() {
+      $(this).css("visibility","hidden");
+    });
+    // and change the pointer
+    $("body").css("cursor","progress");
+    
+  }
+}
+
+function deactivateUserInteraction(){
+  activateUserInteraction(false)
 }
 
 function reactivateUserInteraction(){
-  // debug $("body").css("background-color","black");
-  $(".icon-like , .icon-remove").each(function() {
-    $(this).css("visibility","visible"); 
-  });
-  $("body").css("cursor","auto");
-};
+  activateUserInteraction(true)
+}
+
+
+/* ----------------- primitive actions --- */
 
 function playedDelete(id) {
   // immediate feedback: hide the id
@@ -54,100 +72,164 @@ function playedDelete(id) {
     success: function(result){ reloadPlayed(result) },
     error: function(result){ console.log('delete error ',result)},
     complete: function () { reactivateUserInteraction() }
-  });
+  })
 }
 
-function playedLike(id) {
+function like(id) {
   // immediate feedback: if the icon exists, hide it; if it doesn't, create it.
   if ($('#'+id+' .icon-fav').length==0)
      $('#'+id).append($('<i class="fa icon-fav"/>'))
   else
-    $('#'+id+' .icon-fav').hide();
-  deactivateUserInteraction();
+    $('#'+id+' .icon-fav').hide()
+  deactivateUserInteraction()
+  
   $.ajax({
-    url: '/played/'+encodeURIComponent(id)+'/like',
+    url: '/like/'+encodeURIComponent(id),
     type: 'POST',
-    success: function(result){ reloadPlayed(result) },
+    success: function(result){ 
+      persist.favorites=result; 
+      rebuildSongs() 
+    },
     error: function(result){ console.log('post error ',result)},
     complete: function () { reactivateUserInteraction() }
-  }); 
-  
+  })
 }
+
+/* ----------------- presentation functions --- */
+function findSongInList(song,list) {
+  for (var i=0,l=list.length; i<l; i++) {
+    if ((list[i].title==song.title)&&(list[i].artist==song.artist)) {
+      return i;
+    }
+  }
+  return -1;
+}
+
+/* ----------------- presentation functions --- */
+const YOUTUBESEARCH="https://www.youtube.com/results?search_query=";
 
 function buildSong(song) {
   var $li=$('<li id="'+song.timestamp+'"/>');
-  var $a=$('<a target="_blank"/>').attr('href',youtubesearch+encodeURIComponent(song.artist+' - '+song.title+' - '));
-  var $img=$('<img/>').attr('src',song.cover).attr('title',song.album);
+  var $a=$('<a target="_blank"/>')
+    .attr('href',YOUTUBESEARCH+encodeURIComponent(song.artist+' - '+song.title+' - '));
+  var $img=$('<img/>')
+    .attr('src',song.cover)
+    .attr('title',song.album);
   $a.append($img);  
-  $a.append($('<p class="timestamp">').text(new Date(song.timestamp).toLocaleString('en-GB').slice(0,-3)));          
-  $a.append($('<p class="artist">').html(song.artist.wbr(10)));
-  $a.append($('<p class="song">').html(song.title.wbr(10)));
+  $a.append($('<p class="timestamp">')
+    .text(new Date(song.timestamp).toLocaleString('en-GB').slice(0,-3)));          
+  $a.append($('<p class="artist">')
+    .html(song.artist.wbr(10)));
+  $a.append($('<p class="song">')
+    .html(song.title.wbr(10)));
   $li.append($a);
-  var $iconlike=$('<i title="'+((song.like)?'unlike':'like')+'" class="fa '+
-                     ((song.like)?'fa-thumbs-down':'fa-thumbs-up')+
-                    ' icon-like"/>').hide();                        
-  var $iconremove=$('<i title="remove" class="fa icon-remove"/>').hide(); 
-  $li.append($iconlike);
-  $li.append($iconremove); 
+  var $iconlike=$('<i title="'+((song.like)?'unlike':'like')+
+    '" class="fa '+((song.like)?'fa-thumbs-down':'fa-thumbs-up')+
+    ' icon-like"/>')
+    .hide();                        
+  var $iconremove=$('<i title="remove" class="fa icon-remove"/>').hide() 
+  $li.append($iconlike)
+  $li.append($iconremove) 
   
-  $iconlike.click(function() { playedLike($(this).parent()[0].id); });
-  $iconremove.click(function(){ playedDelete($(this).parent()[0].id);  }); 
+  $iconlike.click(function() { like($(this).parent()[0].id) })
+  $iconremove.click(function(){ playedDelete($(this).parent()[0].id)  }) 
   
   if (song.like) {
      var $iconfav=$('<i class="fa icon-fav"/>');   
      $li.append($iconfav); 
-     $iconfav.click(function() { playedLike($(this).parent()[0].id); });
-  };
+     //$iconfav.click(function() { like($(this).parent()[0].id); });
+  }
   
-  $li.hover(function(){$iconlike.show(); $iconremove.show();},
-            function(){$iconlike.hide(); $iconremove.hide();});
+  $li.hover(function(){$iconlike.show(); $iconremove.show() },
+            function(){$iconlike.hide(); $iconremove.hide() });
   return $li;
 };
 
+
+/* -------------------------------------- presentation functions --- */
 function buildPlaying(data) {
   if (!data.album) data.album=""; 
   $("#playing-link").attr('href','http://catradio.cat'+data.link);
   $("#playing-cover img").attr('src',data.cover).attr('title',data.album);
   $("#playing-artist").text(data.artist);
   $("#playing-song").text(data.title);
-  document.title = data.artist+'-'+data.title+' @ iCat.cat & Lo Pere';
+  document.title = data.artist+' - '+data.title+' @ iCat.cat & Lo Pere';
 }
 
-/* useless
-function refreshPlayingTime(now,last) {
-  $("#playing-label").text(
-    'iCat en directe. '+ new Date(now).toLocaleString('en-GB')+
-    '. Ara sona. ' + new Date(last).toLocaleString('en-GB'));
-};
-*/
 
-const youtubesearch="https://www.youtube.com/results?search_query=";
+/* ------------------------------------- presentation functions --- */
+function rebuildSongs() {
+ 
+  var songs = persist.songs
+  var favs = persist.favorites 
+ 
+  // mark as liked all the songs that are in favs        
+  songs.map ( function(s) { 
+    var idx = findSongInList(s,favs);
+    if (idx!=-1) {
+      s.like=favs[idx].like;
+    }
+  })  
+   
+  // empty the list of songs and reappend one by one
+  $("#played").empty()
+  songs.map(function(song){
+    $("#played").append(buildSong(song));
+  })
+}
+
+/*--- fetch and show --------------------------------------------------*/
 var lastD = 0;
 
-function reload(){ 
+function reloadPlaying(cb) {
   $.ajax({
     dataType: "json",
     url: '/playing',
     success: function(data){
       if (data.timestamp!=lastD) {
-        deactivateUserInteraction();
         lastD=data.timestamp;
-        buildPlaying(data);      
-        $.ajax({
-          dataType: "json",
-          url: '/played',
-          success: function(songs){
-            reloadPlayed(songs);
-          },
-          complete: function () { reactivateUserInteraction() }
-        });
+        cb(data);        
       }
     }
   })
 }
-  
 
-$(function(){  // kick off
-  reload();                  // now,.. 
-  setInterval(reload,10000); // ..and every 10 secs   
-});
+function reloadFavorites(cb) {
+  $.ajax({
+    dataType: "json",
+    url: '/favorites',
+    success: cb
+  })
+}
+
+function reloadPlayed(cb) {
+   $.ajax({
+     dataType: "json",
+     url: '/played',
+     success: cb
+   })
+}
+  
+function reload(){ 
+  reloadPlaying( function ( playing ) {
+    deactivateUserInteraction()
+    buildPlaying(playing) 
+    
+    reloadPlayed ( function( songs ) {
+      persist.songs = songs
+      rebuildSongs()
+      reactivateUserInteraction()           
+    })
+    
+    reloadFavorites ( function (favs) {
+      persist.favorites = favs
+      rebuildSongs()
+    }) 
+  })
+}
+  
+/*--------------- kick off-----------------------------------------*/
+$(function(){ 
+  reload()                     // now,.. 
+  setInterval(reload,10000)    // ..and every 10 secs   
+})

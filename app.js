@@ -4,22 +4,27 @@
  Lo Pere, Barcelona. palbcn@yahoo.com
 */
 
-var fs=require('fs');
-var path=require('path');
-var os=require('os');
-var superagent = require('superagent');
-var $ = require('cheerio');
-var express = require('express');
-var app = express();
+var fs=require('fs')
+var path=require('path')
+var os=require('os')
+var superagent = require('superagent')
+var $ = require('cheerio')
+var express = require('express')
+var app = express()
 
-const reloadURL = 
-  "http://dinamics.catradio.cat/dalet/catradio/icat/v1/refresh_icat.xml";
-const contentURLprefix =
-  "http://catradio.cat/icat/standalone/icatPlayer/icatplayer/directe/3/";
+const REFRESH_URL = 
+  "http://dinamics.catradio.cat/dalet/catradio/icat/v1/refresh_icat.xml"
+const CONTENT_URL_PREFIX =
+  "http://catradio.cat/icat/standalone/icatPlayer/icatplayer/directe/3/"
 
-var played=[];  // previously played songs list
-var playing={}; // currently playing song
-var playedfile = 'icat.json'; 
+const ALL_CHANNELS_URL = "http://catradio.cat/icat/standalone/icatPlayer/icatplayer/canals/foo/bar"
+ 
+var played=[]  // previously played songs list
+var playing={} // currently playing song
+var icatfn = 'icat.json'; 
+
+var favorites=[]
+var favsfn = 'favorites.json'
 
 // --- played list utils  ----------------------------------------------
 function findSongInList(song,list) {
@@ -50,8 +55,8 @@ app.use(express.static(__dirname + '/public'));
 // - in production assets are deployed in public 
 // - and vendor should not be needded as resources should be loaded from provider cdns
 if (app.get('env') =='development') {
- app.use('/vendor',express.static('/temp/vendor'));
- app.use('/assets',express.static('/temp/assets'));
+ app.use('/vendor',express.static('/pere/sources/html/vendor'));
+ app.use('/assets',express.static('/pere/sources/html/assets'));
 } else {
  app.use('/vendor',express.static(__dirname + '/public/vendor'));
  app.use('/assets',express.static(__dirname + '/public/assets')); 
@@ -66,19 +71,51 @@ app.get('/playing', function (req, res) {
   res.send(playing);
 }); 
 
+app.get('/favorites', function (req, res) {
+  res.send(favorites);
+})
+
 app.delete('/played/:id',function(req,res) {
+  console.time('delete '+req.params.id);
   var index=findIdInList(req.params.id,played);
   if (index==-1) {
     res.status(404).send(req.params.id+" not found");
   } else {
-    console.time('delete '+req.params.id);
     played.splice(index,1);
     res.send(played);
-    fs.writeFileSync(playedfile, JSON.stringify(played), "utf-8");
-    console.timeEnd('delete '+req.params.id);
+    fs.writeFileSync(icatfn, JSON.stringify(played), "utf-8")
   }  
-});
+  console.timeEnd('delete '+req.params.id)
+})
 
+app.post('/like/:id', function (req, res) {
+  var index=findIdInList(req.params.id,played)
+  if (index==-1) { 
+    console("404 "+req.params.id+" not found");
+    return res.status(404).send(req.params.id+" not found");
+  } 
+  console.time('like '+req.params.id)
+ 
+  played[index].like = !played[index].like;
+  var reqsong = {
+    artist: played[index].artist,
+    title: played[index].title
+  }
+
+  index=findSongInList(reqsong,favorites)
+  if (index==-1) { 
+    reqsong.like=true
+    favorites.push(reqsong)
+  } else {
+    favorites[index].like=!favorites[index].like
+  }
+  res.send(favorites)
+  fs.writeFileSync(favsfn, JSON.stringify(favorites), "utf-8")
+  console.timeEnd('like '+req.params.id)
+})
+
+
+/*
 app.post('/played/:id/:action',function(req,res){
   var index=findIdInList(req.params.id,played);
   if (index==-1) { 
@@ -98,6 +135,7 @@ app.post('/played/:id/:action',function(req,res){
     res.status(401).send("invalid request "+req.params.action);
   }
 });
+*/
 
 // --- extract remote content -------------------------------------------
 function loadFromURL(url,cb){
@@ -115,6 +153,8 @@ function logerror(err) {
     :err); 
 }
 
+// ---- basic functions --------------------------
+
 function squeeze(s) {
   return s.replace(/\s+/g,' ').trim(); 
 }
@@ -131,7 +171,8 @@ function adjustAlbum(s,a) {
 };
 
 // ---- reload content html ----
-function reloadHTML(err,html) {
+
+function scrapeHTML(err,html) {
   if (err) return logerror(err);
    
   var $content=$('<div>'+html+'</div>');
@@ -155,56 +196,65 @@ function reloadHTML(err,html) {
   s.like = (idx==-1) ? false : played[idx].like;  
   played.unshift(s); // insert in played list
   playing=s;         // show as currently played
-  fs.writeFileSync(playedfile, JSON.stringify(played), "utf-8"); // save to disk
+  fs.writeFileSync(icatfn, JSON.stringify(played), "utf-8"); // save to disk
   console.timeEnd(artist+' - '+title);
 }
 
-// ---- reload info xml ----
+// ---- reload scraped info xml ----
 var lastT=0;
 
-function reloadXML(err,xml){
-  if (err) return logerror(err); 
+function scrapeXML(err,xml){
+  if (err) return logerror(err);
   var $xml=$(xml);
   var itemIdBloc =$xml.find('#info').attr("idbloc");
-  var itemT =$xml.find('#info').attr("t"); 
+  var itemT =$xml.find('#info').attr("t");
   if (itemT!=lastT) {   // info idblock t has changed ?
     lastT = itemT;
-    loadFromURL(contentURLprefix+itemIdBloc, reloadHTML);
+    loadFromURL( CONTENT_URL_PREFIX + itemIdBloc, scrapeHTML);
   }; 
 };
 
-function reload(){ 
-  loadFromURL(reloadURL, reloadXML); 
+function scrape(){ 
+  loadFromURL( REFRESH_URL, scrapeXML); 
 }
 
 // --- main --------------------------------------------------------
 
 (function main(){  
-  playedfile = path.normalize(path.resolve(
+  icatfn = path.normalize(path.resolve(
     process.argv[2] || 
     process.env.ICAT || 
     path.join(os.homedir(),'icat.json')));
-  if (fs.existsSync(playedfile)) {
-    fs.readFile(playedfile, "utf-8", function(err,data) {
-      var parsed=JSON.parse(data);
-      if (Array.isArray(parsed)) { 
-        played = parsed;
-        playing = played[0];
-      }
-    });
-  } else {
-    fs.writeFileSync(playedfile, JSON.stringify(played), "utf-8");
-    if (!fs.existsSync(playedfile)) 
-      return console.error("Can't create %s",playedfile);
-  }
+     
+  favsfn = path.normalize(path.resolve(
+    process.argv[3] || 
+    process.env.FAVORITES || 
+    path.join(os.homedir(),'favorites.json')
+  ));   
+  
+  if (!fs.existsSync(icatfn)) return console.error(icatfn+' not found');
+  if (!fs.existsSync(favsfn)) return console.error(favsfn+' not found');
+  
+  var data = fs.readFileSync(icatfn, "utf-8")
+  if (!data) return console.error("can't read "+icatfn);
+  var parsed=JSON.parse(data);
+  if (!Array.isArray(parsed)) return console.error('invalid '+icatfn) 
+  played = parsed;
+  playing = played[0];
+   
+  data=fs.readFileSync(favsfn, "utf-8")
+  if (!data) return console.error("can't read "+favsfn);
+  parsed=JSON.parse(data);
+  if (!Array.isArray(parsed)) return console.error('invalid '+favsfn)
+  favorites = parsed;
  
-  reload();                  // now,.. 
-  setInterval(reload,10000); // ..and every 10 secs  
+  scrape();                  // now,.. 
+  setInterval(scrape,10000); // ..and every 10 secs  
 
   var server = app.listen(process.env.PORT || 3210, function () {
-    console.log('iCat server is now open for e-business');
-    console.log('using',playedfile);
-    console.log('at localhost:',server.address().port);
-  });
+    console.log('iCat server (%s) is now open for e-business',process.argv[1])
+    console.log('using %s and %s',icatfn,favsfn)
+    console.log('at localhost:%d',server.address().port)
+  })
  
-})();
+})()
