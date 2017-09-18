@@ -8,16 +8,12 @@ var fs=require('fs')
 var path=require('path')
 var os=require('os')
 var superagent = require('superagent')
+require('superagent-charset')(superagent)
 var $ = require('cheerio')
 var express = require('express')
 var app = express()
 
-const REFRESH_URL = 
-  "http://dinamics.catradio.cat/dalet/catradio/icat/v1/refresh_icat.xml"
-const CONTENT_URL_PREFIX =
-  "http://catradio.cat/icat/standalone/icatPlayer/icatplayer/directe/3/"
-
-const ALL_CHANNELS_URL = "http://catradio.cat/icat/standalone/icatPlayer/icatplayer/canals/foo/bar"
+const ARAFEM_URL = "http://dinamics.ccma.cat/public/apps/catradio/v2/arafem/arafem_ic.json";
  
 var played=[]  // previously played songs list
 var playing={} // currently playing song
@@ -115,28 +111,6 @@ app.post('/like/:id', function (req, res) {
 })
 
 
-/*
-app.post('/played/:id/:action',function(req,res){
-  var index=findIdInList(req.params.id,played);
-  if (index==-1) { 
-    res.status(404).send(req.params.id+" not found");
-  } else if (req.params.action=="like") {
-    console.time('like '+req.params.id);
-    played[index].like=!played[index].like;
-    var o=played[index];
-    //populate all over the songs
-    played.map(function(s){
-      if ((o.title==s.title) && (o.artist==s.artist)) s.like=o.like;
-    });
-    res.send(played);
-    fs.writeFileSync(playedfile, JSON.stringify(played), "utf-8");
-    console.timeEnd('like '+req.params.id);
-  } else {
-    res.status(401).send("invalid request "+req.params.action);
-  }
-});
-*/
-
 // --- extract remote content -------------------------------------------
 function loadFromURL(url,cb){
   superagent
@@ -164,59 +138,39 @@ function toTitleCase(s) {
       function($1) { return $1.toUpperCase(); });
 }
 
-function adjustAlbum(s,a) {
-  var r =s.replace(/^\s*portada del disc\s+/i,""); 
-  r = r.replace(new RegExp('\\s*(de |d\'|d\' )'+a+'\\s*$',"i"),"");
-  return toTitleCase(r);
-};
-
-// ---- reload content html ----
-
-function scrapeHTML(err,html) {
-  if (err) return logerror(err);
-   
-  var $content=$('<div>'+html+'</div>');
-  var songTitleSlashArtist=$content.find("h1").text();
-  var songTitleArtist=songTitleSlashArtist.split('/'); 
-  var artist = songTitleArtist[1] ? toTitleCase(squeeze(songTitleArtist[1])): "?"; 
-  var title = songTitleArtist[0] ? toTitleCase(squeeze(songTitleArtist[0])): "?";
-  var cover=$content.find("img").attr('src');
-  var album=$content.find("img").attr('alt');
-  var link=$content.find("a").attr('href');
-  var s= { 
-    artist: artist, 
-    title: title, 
-    album: album ? adjustAlbum(album,artist):"",
-    cover: cover,
-    link: link,
-    timestamp: Date.now()  
-  };
-  console.time(artist+' - '+title);
-  var idx=findSongInList(s,played); 
-  s.like = (idx==-1) ? false : played[idx].like;  
-  played.unshift(s); // insert in played list
-  playing=s;         // show as currently played
-  fs.writeFileSync(icatfn, JSON.stringify(played), "utf-8"); // save to disk
-  console.timeEnd(artist+' - '+title);
+function adjust(s) {
+  return s ? toTitleCase(squeeze(s)): "?"; 
 }
 
-// ---- reload scraped info xml ----
-var lastT=0;
+var lastID=0;
 
-function scrapeXML(err,xml){
-  if (err) return logerror(err);
-  var $xml=$(xml);
-  var itemIdBloc =$xml.find('#info').attr("idbloc");
-  var itemT =$xml.find('#info').attr("t");
-  if (itemT!=lastT) {   // info idblock t has changed ?
-    lastT = itemT;
-    loadFromURL( CONTENT_URL_PREFIX + itemIdBloc, scrapeHTML);
-  }; 
-};
-
-function scrape(){ 
-  loadFromURL( REFRESH_URL, scrapeXML); 
+function scrape() {
+  loadFromURL(ARAFEM_URL, (err,json) => {
+    if (err) return logerror(err);
+    var d = JSON.parse(json);
+    if (d.canal && d.canal.ara_fem && d.canal.ara_fem.arasona &&
+        (d.canal.ara_fem.arasona.bloc_id != lastID)) {
+      var song= { 
+        id: d.canal.ara_fem.arasona.bloc_id,  
+        artist: adjust(d.canal.ara_fem.arasona.interpret), 
+        title: adjust(d.canal.ara_fem.arasona.tema), 
+        cover: d.canal.ara_fem.arasona.imatges.imatge.text,
+        timestamp: Date.now()  
+      };
+      var idx=findSongInList(song,played); 
+      song.like = (idx==-1) ? false : played[idx].like;  
+      
+      playing=song;         // show as currently played
+      if (played[0].id!=song.id) {
+        played.unshift(song); // insert in played list only if not already inserted [occurs in restarts]
+        fs.writeFileSync(icatfn, JSON.stringify(played), "utf-8"); // save to disk
+        console.log(song.artist+' - '+song.title);
+      }
+     
+    }    
+  }); 
 }
+
 
 // --- main --------------------------------------------------------
 

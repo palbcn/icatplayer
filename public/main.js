@@ -113,8 +113,7 @@ function buildSong(song) {
   var $a=$('<a target="_blank"/>')
     .attr('href',YOUTUBESEARCH+encodeURIComponent(song.artist+' - '+song.title+' - '));
   var $img=$('<img/>')
-    .attr('src',song.cover)
-    .attr('title',song.album);
+    .attr('src',song.cover);
   $a.append($img);  
   $a.append($('<p class="timestamp">')
     .text(new Date(song.timestamp).toLocaleString('en-GB').slice(0,-3)));          
@@ -148,9 +147,7 @@ function buildSong(song) {
 
 /* -------------------------------------- presentation functions --- */
 function buildPlaying(data) {
-  if (!data.album) data.album=""; 
-  $("#playing-link").attr('href','http://catradio.cat'+data.link);
-  $("#playing-cover img").attr('src',data.cover).attr('title',data.album);
+  $("#playing-cover img").attr('src',data.cover)
   $("#playing-artist").text(data.artist);
   $("#playing-song").text(data.title);
   document.title = data.artist+' - '+data.title+' @ iCat.cat & Lo Pere';
@@ -176,6 +173,10 @@ function rebuildSongs() {
   songs.map(function(song){
     $("#played").append(buildSong(song));
   })
+  
+  $("#played-total").text(songs.length);
+  $("#liked-total").text( songs.reduce( (a,e)=>e.like?a+1:a , 0 ));
+
 }
 
 /*--- fetch and show --------------------------------------------------*/

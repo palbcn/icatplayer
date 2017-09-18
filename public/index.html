@@ -13,22 +13,12 @@
 </a>
 <div id="playing">
   <div id="playing-info">
-    <a id="playing-link" target="_blank" href="/">
     <div id="playing-cover"><img src="noimage.jpg"></img></div>
     <p id="playing-label">iCat en directe. Ara sona.</p>
     <p id="playing-artist" class="artist">Currently</p>
     <p id="playing-song" class="song">playing</p>
-    </a>
   </div>
-  <div id="player">
-    <!-- object type="application/x-shockwave-flash" data="http://statics.catradio.cat/ria/rrp/srp.swf" width="103" height="30">
-    <param name="flashvars" value="item=353&amp;skin=http://statics.catradio.cat/ria/rrp/skin_rrp_directe.swf">
-    </object ---->   
-    <!--iframe width="133px" height="30px" frameborder="0" scrolling="no" allowfullscreen="" src="http://www.ccma.cat/audio/embed/icat/ic" id="rmp-iframe-1">
-	  </iframe-->
-    <!-- a href="http://www.ccma.cat/audio/embed/icat/ic/" target="_blank">
-    <img src="player.jpg">
-    </a  -------->
+  <div id="player">    
     <iframe width="133px" height="60px" frameborder="0" scrolling="no" allowfullscreen="" src="http://www.catradio.cat/directes/icat_http.m3u">
 	  </iframe>
   </div>
@@ -36,7 +26,8 @@
 </header>
 
 <main>
-<p id="played-label">iCat en diferit. Han sonat.</p>
+<p id="played-label">iCat en diferit. Han sonat <span id="played-total">999</span>
+cançons, de les quals me n'han agradat <span id="liked-total">999</span>. </p>
 <ul id="played">
 </ul>
 </main>
