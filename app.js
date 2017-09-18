@@ -115,7 +115,8 @@ app.post('/like/:id', function (req, res) {
 function loadFromURL(url,cb){
   superagent
     .get(url) 
-    .set({"Accept-Encoding" : "gzip,sdch"})    
+    .set({"Accept-Encoding" : "gzip,sdch"})   
+    .charset()       
     .end(function(err,data){
       if (err) cb(err); else cb(err,data.text);
     });
@@ -138,8 +139,12 @@ function toTitleCase(s) {
       function($1) { return $1.toUpperCase(); });
 }
 
+
+function ifExists(s) {
+  return s ? s: "?"; 
+}
 function adjust(s) {
-  return s ? toTitleCase(squeeze(s)): "?"; 
+  return toTitleCase(squeeze(ifExists(s)));
 }
 
 var lastID=0;
@@ -154,7 +159,7 @@ function scrape() {
         id: d.canal.ara_fem.arasona.bloc_id,  
         artist: adjust(d.canal.ara_fem.arasona.interpret), 
         title: adjust(d.canal.ara_fem.arasona.tema), 
-        cover: d.canal.ara_fem.arasona.imatges.imatge.text,
+        cover: ifExists(d.canal.ara_fem.arasona.imatges.imatge.text),
         timestamp: Date.now()  
       };
       var idx=findSongInList(song,played); 
