@@ -139,14 +139,15 @@ function toTitleCase(s) {
       function($1) { return $1.toUpperCase(); });
 }
 
-
 function ifExists(s) {
   return s ? s: "?"; 
 }
+
 function adjust(s) {
   return toTitleCase(squeeze(ifExists(s)));
 }
 
+// -----------------------------------------------
 var lastID=0;
 
 function scrape() {
@@ -166,8 +167,12 @@ function scrape() {
       song.like = (idx==-1) ? false : played[idx].like;  
       
       playing=song;         // show as currently played
-      if (played[0].id!=song.id) {
-        played.unshift(song); // insert in played list only if not already inserted [occurs in restarts]
+      
+      // insert in played list 
+      if ( (song.artist!=="?") &&      // only if valid song, not a news clip
+           (song.title.toLowerCase().indexOf("icat ")!=0) &&   // and not an ad does not begin with icat
+           (played[0].id!=song.id) ) { // and not already inserted [occurs in restarts]
+        played.unshift(song);          // insert at first position 
         fs.writeFileSync(icatfn, JSON.stringify(played), "utf-8"); // save to disk
         console.log(song.artist+' - '+song.title);
       }
