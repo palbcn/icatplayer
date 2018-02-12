@@ -14,6 +14,7 @@ var express = require('express')
 var app = express()
 
 const ARAFEM_URL = "http://dinamics.ccma.cat/public/apps/catradio/v2/arafem/arafem_ic.json";
+const BLANKIMAGE = "noimage.jpg";
  
 var played=[]  // previously played songs list
 var playing={} // currently playing song
@@ -129,14 +130,14 @@ function logerror(err) {
 }
 
 // ---- basic functions --------------------------
-
 function squeeze(s) {
   return s.replace(/\s+/g,' ').trim(); 
 }
 
+
 function toTitleCase(s) {
-  return s.toLowerCase().replace(/^(.)|\s(.)/g, 
-      function($1) { return $1.toUpperCase(); });
+  // TO DO -- recognize Acronyms Z.Z.Z.Z.
+  return s.toLowerCase().replace(/^(.)|\s(.)/g, $1 => $1.toUpperCase());
 }
 
 function ifExists(s) {
@@ -144,7 +145,36 @@ function ifExists(s) {
 }
 
 function adjust(s) {
-  return toTitleCase(squeeze(ifExists(s)));
+  if (!s) return "?";
+  return toTitleCase(squeeze(s));  
+}
+
+function abbrev(s,n,ellipsis) {
+  let temp = squeeze(ifExists(s));
+  if (temp.length <= n || n == 0) return temp;  
+  return (ellipsis || '…') + temp.slice(-n);
+};
+
+function isImage(s) {
+  if ( !s || !s.match(/\.(jpeg|jpg|gif|png)$/) ) return BLANKIMAGE;
+  return s;
+}
+
+// -----------------------------------------------
+function esc(v) { return "\x1b["+v+"m" };
+const RESET=esc(0);
+/* Foreground colors. 30:Black,31:Red,32:Green,33:Yellow,34:Blue,35:Magenta,36:Cyan,37:White */
+const BLACK=esc(30); 
+const RED=esc(31); 
+const GREEN=esc(32);
+const YELLOW=esc(33);
+const BLUE=esc(34);
+const MAGENTA=esc(35);
+const CYAN=esc(36);
+const WHITE=esc(37);
+
+function colorLog(c,s) {
+  process.stdout.write(c + s + RESET + '\n');
 }
 
 // -----------------------------------------------
@@ -160,23 +190,23 @@ function scrape() {
         id: d.canal.ara_fem.arasona.bloc_id,  
         artist: adjust(d.canal.ara_fem.arasona.interpret), 
         title: adjust(d.canal.ara_fem.arasona.tema), 
-        cover: ifExists(d.canal.ara_fem.arasona.imatges.imatge.text),
+        cover: isImage(d.canal.ara_fem.arasona.imatges.imatge.text),
         timestamp: Date.now()  
       };
       var idx=findSongInList(song,played); 
       song.like = (idx==-1) ? false : played[idx].like;  
-      
       playing=song;         // show as currently played
-      
-      // insert in played list 
-      if ( (song.artist!=="?") &&      // only if valid song, not a news clip
-           (song.title.toLowerCase().indexOf("icat ")!=0) &&   // and not an ad does not begin with icat
-           (played[0].id!=song.id) ) { // and not already inserted [occurs in restarts]
+      let t = Math.floor(Date.now() /1000);
+      process.stdout.write(t+' '+WHITE+song.artist+' - '+CYAN+song.title+RESET+'\r'); 
+      // insert in played list
+      if ( (played[0].id!=song.id) &&  // if not already inserted 
+           (song.artist!=="?") &&      // only if valid song, not a news clip
+           (song.title.toLowerCase().indexOf("icat ")!=0) ) {  // and not an ad does not begin with icat
+        let ll = song.artist.length+song.title.length;
+        process.stdout.write(WHITE+song.artist+' - '+CYAN+song.title+RESET+' - '+abbrev(song.cover,72-ll)+'\n');         
         played.unshift(song);          // insert at first position 
-        fs.writeFileSync(icatfn, JSON.stringify(played), "utf-8"); // save to disk
-        console.log(song.artist+' - '+song.title);
-      }
-     
+        fs.writeFileSync(icatfn, JSON.stringify(played), "utf-8"); // save to disk                 
+      }     
     }    
   }); 
 }
@@ -216,9 +246,13 @@ function scrape() {
   setInterval(scrape,10000); // ..and every 10 secs  
 
   var server = app.listen(process.env.PORT || 3210, function () {
-    console.log('iCat server (%s) is now open for e-business',process.argv[1])
-    console.log('using %s and %s',icatfn,favsfn)
-    console.log('at localhost:%d',server.address().port)
+    process.stdout.write(`
+iCat server ${YELLOW}${process.argv[1]}${RESET} is now open for e-business
+using ${YELLOW}${icatfn}${RESET} 
+and ${YELLOW}${favsfn}${RESET}
+at ${CYAN}localhost:${server.address().port}${RESET}
+
+`);
   })
  
 })()

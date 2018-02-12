@@ -1,16 +1,32 @@
-
-@import url(assets/reset.css);
-
-
-
+/********************************************************/
+html {
+  box-sizing: border-box;
+}
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+* {
+  margin:0; padding:0;
+}
 body { 
   background: #000; 
   color: #ccc; 
   font-size: 16px;
   min-width: 600px;
+  font-family: "Roboto", sans-serif; 
+  font-weight: 300;    
+  font-size: 16px;
 }
 
+/********************************************************/
+a {
+  text-decoration: none;
+}
+img {
+  border:0;
+}
 
+/********************************************************/
 #logo {
  float:right;
  width: 80px;
@@ -28,17 +44,19 @@ body {
   margin-left: 12px;
   margin-right: 12px;
   border-top: red solid 4px;
+  width: 200px;
+  height: 200px;  
 }
 
 #playing-cover img {
- --border: 1px solid #666;
  width: 152px; /*=200-48*/
+ height: 152px; /*=200-48*/
  margin:24px;  
 }
 
 #playing-label { padding-top: 24px; font-size: 12px; color: #999}
 #playing-artist { color: #fff; }
-#playing-song { color: #ccf; padding-bottom: 12px }
+#playing-song { color: #ccf; padding-bottom: 12px; overflow: hidden; }
 
 #player { padding-bottom: 12px; }
 
@@ -81,8 +99,7 @@ body {
    overflow: hidden;
   }
   
-  #played li:hover,
-  #playing:hover  {
+  #played li:hover  {
    background-color: #300;
   }
   
@@ -134,16 +151,20 @@ body {
       right:0px;
       bottom:0px;
     }
+    .icon-remove:before {
+      /* fa-trash f1f8, fa-ban f05e, fa-times f00d */
+      content: "\f1f8";
+    }
     
     #played li .icon-like {
       left:0px;
       bottom:0px;
     }
-    
-    .icon-remove:before {
-      /* fa-trash \f1f8 or fa-ban \f05e or fa-times \f00d or ... ??? */
-      content: "\f00d";
+    .icon-like:before {
+      /* fa-thumbs-up f164 */
+      content: "\f164";
     }
+
         
     #played li .icon-fav {
       position:absolute;

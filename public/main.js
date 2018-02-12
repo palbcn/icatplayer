@@ -11,7 +11,7 @@ var persist = {
 
 /* ----------------- insert word breaks in long words at num pos --- */
 String.prototype.wbr = function(num) {  
-  var r =  this.replace ( RegExp("(\\w{" + num + "})(\\w)", "g"),
+    var r =  this.replace ( RegExp("(\\w{" + (num?num:10) + "})(\\w)", "g"),
     function(match,submatch1,submatch2){
       return submatch1 + "<wbr>" + submatch2
     }
@@ -20,7 +20,6 @@ String.prototype.wbr = function(num) {
 }
 
 /* ----------------- show feedback for long operations --- */
-
 /* deprecated, use 
 function gray() {
  $("body").append("<div id=\"overlay\"/>"); 
@@ -29,8 +28,7 @@ function ungray() {
  $("#overlay").remove(); 
 }*/
 
-function activateUserInteraction ( setunset ) {
- 
+function activateUserInteraction ( setunset ) { 
  // we could use different strategies. 
  // here we just change the visibility of the action icons.
   
@@ -60,7 +58,6 @@ function reactivateUserInteraction(){
 
 
 /* ----------------- primitive actions --- */
-
 function playedDelete(id) {
   // immediate feedback: hide the id
   $('#'+id).hide();
@@ -95,7 +92,7 @@ function like(id) {
   })
 }
 
-/* ----------------- presentation functions --- */
+/* -------------------- */
 function findSongInList(song,list) {
   for (var i=0,l=list.length; i<l; i++) {
     if ((list[i].title==song.title)&&(list[i].artist==song.artist)) {
@@ -118,9 +115,9 @@ function buildSong(song) {
   $a.append($('<p class="timestamp">')
     .text(new Date(song.timestamp).toLocaleString('en-GB').slice(0,-3)));          
   $a.append($('<p class="artist">')
-    .html(song.artist.wbr(10)));
+    .html(song.artist.wbr()));
   $a.append($('<p class="song">')
-    .html(song.title.wbr(10)));
+    .html(song.title.wbr()));
   $li.append($a);
   var $iconlike=$('<i title="'+((song.like)?'unlike':'like')+
     '" class="fa '+((song.like)?'fa-thumbs-down':'fa-thumbs-up')+
@@ -147,9 +144,9 @@ function buildSong(song) {
 
 /* -------------------------------------- presentation functions --- */
 function buildPlaying(data) {
-  $("#playing-cover img").attr('src',data.cover)
-  $("#playing-artist").text(data.artist);
-  $("#playing-song").text(data.title);
+  $("#playing-cover img").attr('src',data.cover?data.cover:'noimage.jpg')
+  $("#playing-artist").html(data.artist.wbr()); 
+  $("#playing-song").html(data.title.wbr());
   document.title = data.artist+' - '+data.title+' @ iCat.cat & Lo Pere';
 }
 
@@ -231,6 +228,6 @@ function reload(){
   
 /*--------------- kick off-----------------------------------------*/
 $(function(){ 
-  reload()                     // now,.. 
-  setInterval(reload,10000)    // ..and every 10 secs   
+  reload()                     // reload right now,.. 
+  setInterval(reload,20000)    // ..and then every 20 secs   
 })
