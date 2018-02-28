@@ -13,6 +13,18 @@ var played=[]  // previously played songs list
 var playing={} // currently playing song
 var icatfn = 'icathistory.json'; 
 
+// --- date time format --------------------------------------------
+function ymdhm(ts) {
+  let z = v => v < 10 ? "0" + v : v;
+  let date = new Date(ts);
+  let year = date.getFullYear();
+  let month = z(date.getMonth() + 1);
+  let day = z(date.getDate());
+  let hour = z(date.getHours());
+  let minute = z(date.getMinutes());
+  return "" + year + month + day + " " + hour + minute;
+}
+
 // --- colors ------------------------------------------------------
 function esc(v) { return "\x1b["+v+"m" };
 const RESET=esc(0);
@@ -30,6 +42,11 @@ const WHITE=esc(37);
 // --- main --------------------------------------------------------
 
 (function main(){  
+  function saySong(s) {
+    let dt = ymdhm(s.timestamp);
+    process.stdout.write(dt+' '+WHITE+s.artist+RESET+' - '+CYAN+s.title+RESET+'\n')
+  }
+
   icatfn = path.normalize(path.resolve(
     process.argv[2] || 
     process.env.ICAT || 
@@ -40,19 +57,20 @@ const WHITE=esc(37);
   let data = fs.readFileSync(icatfn, "utf-8")
   if (!data) return console.error("can't read "+icatfn);
   let parsed=JSON.parse(data);
-  if (!Array.isArray(parsed)) return console.error('invalid '+icatfn) 
+  if (!Array.isArray(parsed)) return console.error('invalid '+icatfn);  
   let played = parsed;
-
-  function saySong(s) {
-    let dt = new Date(s.timestamp).toLocaleString().slice(0,-3);
-    process.stdout.write(dt+' '+WHITE+s.artist+RESET+' - '+CYAN+s.title+RESET+'\n')
-  }
-
+  played.sort( (a,b)=> a.timestamp-b.timestamp );  
+  played = played.filter( (e,i) => (i==0)||(e.artist!=played[i-1].artist)||(e.title!=played[i-1].title));
+  
   console.log('Recording play history of icat.cat into ',CYAN+
   icatfn,WHITE+played.length+RESET,'songs'); 
-  played.sort( (a,b)=> a.timestamp-b.timestamp ).forEach( s => saySong(s) );
-    
-  function s(){
+  
+  played.forEach( s => saySong(s) );    
+  
+  (function nowAndEvery10secs(func){
+    func();                  // now...
+    setInterval(func,10000); // ..and every 10secs, invoke..
+  }) ( function () {         // this function
     scraper(function(err,song) {
       if (err) return;    
       if ( !played[0] || (played[0].id!=song.id) && // if not already inserted 
@@ -63,9 +81,5 @@ const WHITE=esc(37);
         fs.writeFileSync(icatfn, JSON.stringify(played), "utf-8"); // save to disk
       }       
     });
-  }
-  s();                  // now...
-  setInterval(s,10000); // ..and every 10 secs  
-  
- 
+  });    
 })()
