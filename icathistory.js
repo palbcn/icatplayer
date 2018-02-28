@@ -44,11 +44,13 @@ const WHITE=esc(37);
   let played = parsed;
 
   function saySong(s) {
-    process.stdout.write(WHITE+s.artist+RESET+' - '+CYAN+s.title+RESET+'\n')
+    let dt = new Date(s.timestamp).toLocaleString().slice(0,-3);
+    process.stdout.write(dt+' '+WHITE+s.artist+RESET+' - '+CYAN+s.title+RESET+'\n')
   }
 
-  console.log('Recording play history of icat.cat into ',icatfn,played.length,'songs'); 
-  played.reverse().forEach( s => saySong(s) );
+  console.log('Recording play history of icat.cat into ',CYAN+
+  icatfn,WHITE+played.length+RESET,'songs'); 
+  played.sort( (a,b)=> a.timestamp-b.timestamp ).forEach( s => saySong(s) );
     
   function s(){
     scraper(function(err,song) {
@@ -62,7 +64,7 @@ const WHITE=esc(37);
       }       
     });
   }
-  s();                 // now...
+  s();                  // now...
   setInterval(s,10000); // ..and every 10 secs  
   
  

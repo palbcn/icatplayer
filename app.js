@@ -134,7 +134,6 @@ function squeeze(s) {
   return s.replace(/\s+/g,' ').trim(); 
 }
 
-
 function toTitleCase(s) {
   // TO DO -- recognize Acronyms Z.Z.Z.Z.
   return s.toLowerCase().replace(/^(.)|\s(.)/g, $1 => $1.toUpperCase());
@@ -154,6 +153,13 @@ function abbrev(s,n,ellipsis) {
   if (temp.length <= n || n == 0) return temp;  
   return (ellipsis || '…') + temp.slice(-n);
 };
+
+// -----------------------------------------------
+function repeatChar(c,n) {
+  let r = '';
+  for (var i=0; i<n; i++) r+=c;
+  return r;
+}
 
 function isImage(s) {
   if ( !s || !s.match(/\.(jpeg|jpg|gif|png)$/) ) return BLANKIMAGE;
@@ -196,8 +202,10 @@ function scrape() {
       var idx=findSongInList(song,played); 
       song.like = (idx==-1) ? false : played[idx].like;  
       playing=song;         // show as currently played
-      let t = Math.floor(Date.now() /1000);
-      process.stdout.write(t+' '+WHITE+song.artist+' - '+CYAN+song.title+RESET+'\r'); 
+      let t = Math.floor(Date.now()/1000);
+      let tstl = (t+' '+song.artist+' - '+song.title).length;
+      let tsts = t+' '+WHITE+song.artist+' - '+CYAN+song.title+RESET;
+      process.stdout.write(tsts+repeatChar(' ',79-tstl)+'\r'); 
       // insert in played list
       if ( (played[0].id!=song.id) &&  // if not already inserted 
            (song.artist!=="?") &&      // only if valid song, not a news clip
