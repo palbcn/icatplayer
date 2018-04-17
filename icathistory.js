@@ -11,7 +11,6 @@ var scraper = require('./icatscraper');
 
 var played=[]  // previously played songs list
 var playing={} // currently playing song
-var icatfn = 'icathistory.json'; 
 
 // --- date time format --------------------------------------------
 function ymdhm(ts) {
@@ -47,10 +46,10 @@ const WHITE=esc(37);
     process.stdout.write(dt+' '+WHITE+s.artist+RESET+' - '+CYAN+s.title+RESET+'\n')
   }
 
-  icatfn = path.normalize(path.resolve(
+  let icatfn = path.normalize(path.resolve(
     process.argv[2] || 
     process.env.ICAT || 
-    path.join(os.homedir(),'icathistory.json')));
+    path.join(os.homedir(),'icat.json')));
 
   if (!fs.existsSync(icatfn)) return console.error(icatfn+' not found');
   

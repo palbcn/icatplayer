@@ -4,51 +4,49 @@
  Lo Pere, Barcelona. palbcn@yahoo.com
 */
 
-(function ikns(){
-  
-let superagent = require('superagent');
-require('superagent-charset')(superagent);
-let $ = require('cheerio');
+(function ikns() {    
+  let superagent = require('superagent');
+  require('superagent-charset')(superagent);
+  let $ = require('cheerio');
 
-const ARAFEM_URL = "http://dinamics.ccma.cat/public/apps/catradio/v2/arafem/arafem_ic.json";
+  const ARAFEM_URL = "http://dinamics.ccma.cat/public/apps/catradio/v2/arafem/arafem_ic.json";
  
-// --- extract remote content -------------------------------------------
-function loadFromURL(url,cb){
-  superagent
-    .get(url) 
-    .set({"Accept-Encoding" : "gzip,sdch"})   
-    .charset()       
-    .end(function(err,data){
-      if (err) cb(err); else cb(err,data.text);
-    });
-};
+  // --- extract remote content --------------------
+  function loadFromURL(url,cb){
+    superagent
+      .get(url) 
+      .set({"Accept-Encoding" : "gzip,sdch"})   
+      .charset()       
+      .end(function(err,data){
+        if (err) cb(err); else cb(err,data.text);
+      });
+  };
 
-// ---- basic functions --------------------------
-function squeeze(s) {
-  return s.replace(/\s+/g,' ').trim(); 
-}
+  // ---- basic functions --------------------------
+  function squeeze(s) {
+    return s.replace(/\s+/g,' ').trim(); 
+  }
 
-function toTitleCase(s) {
-  // TO DO -- recognize Acronyms Z.Z.Z.Z.
-  return s.toLowerCase().replace(/^(.)|\s(.)/g, $1 => $1.toUpperCase());
-}
+  function toTitleCase(s) {
+    // TO DO -- recognize Acronyms Z.Z.Z.Z.
+    return s.toLowerCase().replace(/^(.)|\s(.)/g, $1 => $1.toUpperCase());
+  }
 
-function ifExists(s) {
-  return s ? s: "?"; 
-}
+  function ifExists(s) {
+    return s ? s: "?"; 
+  }
 
-function adjust(s) {
-  return toTitleCase(squeeze(ifExists(s)));
-}
+  function adjust(s) {
+    return toTitleCase(squeeze(ifExists(s)));
+  }
 
-function abbrev(s,n,ellipsis) {
-  let temp = squeeze(ifExists(s));
-  if (temp.length <= n || n == 0) return temp;  
-  return (ellipsis || '…') + temp.slice(-n);
-};
+  function abbrev(s,n,ellipsis) {
+    let temp = squeeze(ifExists(s));
+    if (temp.length <= n || n == 0) return temp;  
+    return (ellipsis || '…') + temp.slice(-n);
+  };
 
-// -----------------------------------------------
-   
+// -----------------------------------------------  
   function scrape(cb) {
     loadFromURL(ARAFEM_URL, (err,json) => {
       if (err) return cb(err);
@@ -69,7 +67,6 @@ function abbrev(s,n,ellipsis) {
   }
 
 // --- main --------------------------------------------------------
-  
   if (module.parent) {
     module.exports = scrape;    
   } else {
@@ -81,4 +78,5 @@ function abbrev(s,n,ellipsis) {
        setInterval(s,10000); // ..and every 10 secs  
     })()
   }
+
 })();

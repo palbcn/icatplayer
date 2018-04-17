@@ -1,20 +1,18 @@
 #! node
 
-var path=require('path');
-var fs=require('fs');
-
-function findSongInList(song,list) {
-  for (var i=0,l=list.length; i<l; i++) {
-    if ((list[i].title==song.title)&&(list[i].artist==song.artist)) {
-      return i;
-    }
-  }
-  return -1;
-}
-
-
 (function main(inf,ouf){ 
-
+  var path=require('path');
+  var fs=require('fs');
+  
+  function findSongInList(song,list) {
+    for (var i=0,l=list.length; i<l; i++) {
+      if ((list[i].title==song.title)&&(list[i].artist==song.artist)) {
+        return i;
+      }
+    }
+    return -1;
+  }
+  
   var infile = path.normalize(path.resolve(inf));
   var outfile = path.normalize(path.resolve(ouf));
  

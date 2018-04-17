@@ -1,20 +1,16 @@
+(function main() { 
+  var path=require('path');
+  var fs=require('fs');
 
-
-var path=require('path');
-var fs=require('fs');
-
-function adjustAlbum(s,a) {
-  var r =s.replace(/^\s*portada del disc\s+/i,""); 
-  //return r.replace(new RegExp('\\s*de '+a+'\\s*$',"i"),"");
-  return r.replace(new RegExp('\\s*(de |d\'|d\' )'+a+'\\s*$',"i"),"");
-};
-
-function adjustsong(s) {
-  if (s.album) s.album=adjustAlbum(s.album,s.artist);
-  return s;
-}
-
-(function main(){ 
+  function adjustAlbum(s,a) {
+    var r =s.replace(/^\s*portada del disc\s+/i,""); 
+    //return r.replace(new RegExp('\\s*de '+a+'\\s*$',"i"),"");
+    return r.replace(new RegExp('\\s*(de |d\'|d\' )'+a+'\\s*$',"i"),"");
+  };
+  function adjustsong(s) {
+    if (s.album) s.album=adjustAlbum(s.album,s.artist);
+    return s;
+  };
 
   var infile = path.normalize(path.resolve(process.argv[2]));
   var outfile = path.normalize(path.resolve(process.argv[3]));

@@ -10,8 +10,11 @@ var os=require('os')
 var superagent = require('superagent')
 require('superagent-charset')(superagent)
 var $ = require('cheerio')
-var express = require('express')
-var app = express()
+var express = require('express');
+const sharp = require('sharp');
+const datauris = require('datauris'); 
+    
+var app = express();
 
 const ARAFEM_URL = "http://dinamics.ccma.cat/public/apps/catradio/v2/arafem/arafem_ic.json";
 const BLANKIMAGE = "noimage.jpg";
@@ -52,11 +55,9 @@ app.use(express.static(__dirname + '/public'));
 // - in production assets are deployed in public 
 // - and vendor should not be needded as resources should be loaded from provider cdns
 if (app.get('env') =='development') {
- app.use('/vendor',express.static('/pere/sources/html/vendor'));
- app.use('/assets',express.static('/pere/sources/html/assets'));
+  app.use('/vendor',express.static(path.join(process.env.APPDATA,'vendor')));
 } else {
- app.use('/vendor',express.static(__dirname + '/public/vendor'));
- app.use('/assets',express.static(__dirname + '/public/assets')); 
+  app.use('/vendor',express.static(__dirname + '/client/vendor'));
 }
 
 // --- express routes --------------------------------------------------
@@ -162,8 +163,11 @@ function repeatChar(c,n) {
 }
 
 function isImage(s) {
-  if ( !s || !s.match(/\.(jpeg|jpg|gif|png)$/) ) return BLANKIMAGE;
-  return s;
+  return s && s.match(/\.(jpeg|jpg|gif|png)$/)
+}
+
+function asImage(s) {
+  return isImage(s) ? s : BLANKIMAGE;
 }
 
 // -----------------------------------------------
@@ -196,12 +200,12 @@ function scrape() {
         id: d.canal.ara_fem.arasona.bloc_id,  
         artist: adjust(d.canal.ara_fem.arasona.interpret), 
         title: adjust(d.canal.ara_fem.arasona.tema), 
-        cover: isImage(d.canal.ara_fem.arasona.imatges.imatge.text),
+        cover: asImage(d.canal.ara_fem.arasona.imatges.imatge.text),
         timestamp: Date.now()  
       };
+      playing=song;         // show as currently played
       var idx=findSongInList(song,played); 
       song.like = (idx==-1) ? false : played[idx].like;  
-      playing=song;         // show as currently played
       let t = Math.floor(Date.now()/1000);
       let tstl = (t+' '+song.artist+' - '+song.title).length;
       let tsts = t+' '+WHITE+song.artist+' - '+CYAN+song.title+RESET;
@@ -211,9 +215,15 @@ function scrape() {
            (song.artist!=="?") &&      // only if valid song, not a news clip
            (song.title.toLowerCase().indexOf("icat ")!=0) ) {  // and not an ad does not begin with icat
         let ll = song.artist.length+song.title.length;
-        process.stdout.write(WHITE+song.artist+' - '+CYAN+song.title+RESET+' - '+abbrev(song.cover,72-ll)+'\n');         
-        played.unshift(song);          // insert at first position 
-        fs.writeFileSync(icatfn, JSON.stringify(played), "utf-8"); // save to disk                 
+        process.stdout.write(WHITE+song.artist+' - '+CYAN+song.title+RESET+' - '+abbrev(song.cover,72-ll)+'\n');          
+        datauris.fromUrl(song.cover, (err,datauri) => {
+          let {contenttype,buffer,ext} = datauris.parse(datauri);
+          sharp(buffer).resize(200).toBuffer( (err,data) => {
+            if (!err) song.cover = datauris.fromBuffer(data,contenttype);
+            played.unshift(song);          // insert at first position 
+            fs.writeFileSync(icatfn, JSON.stringify(played), "utf-8"); // save to disk
+          }); 
+        });             
       }     
     }    
   }); 
