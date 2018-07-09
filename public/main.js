@@ -56,7 +56,6 @@ function reactivateUserInteraction(){
   activateUserInteraction(true)
 }
 
-
 /* ----------------- primitive actions --- */
 function playedDelete(id) {
   // immediate feedback: hide the id
@@ -225,9 +224,42 @@ function reload(){
     }) 
   })
 }
+
+/* ----------------- player actions --- */
+function playerActions() {
+  
+  // single button play/pause
+  /*$('#player-pause').click(function() {   
+    if ($("#player").prop("paused")) $("#player").get(0).play();
+    else $("#player").get(0).pause();
+    //$('#pause').text($("#player").prop("paused")?"play":"pause");
+    $('#player-pause i').toggleClass('fa-pause');
+    $('#player-pause i').toggleClass('fa-play');
+  });*/  
+  // play/pause two buttons
+  $('#player-pause').click(function() {
+    $('#player').get(0).pause();
+    $('#player-pause').prop('disabled', true);
+    $('#player-play').prop('disabled', false);
+  });
+  $('#player-play').click(function() {  
+    $('#player').get(0).play();
+    $('#player-pause').prop('disabled', false);
+    $('#player-play').prop('disabled', true);
+  });
+  
+  // single button mute/unmute  
+  $('#player-mute').click(function() {
+    $("#player").prop("muted",!$("#player").prop("muted"));
+    $('#player-mute i').toggleClass('fa-volume-up');
+    $('#player-mute i').toggleClass('fa-volume-off');
+  });
+}
+
   
 /*--------------- kick off-----------------------------------------*/
 $(function(){ 
-  reload()                     // reload right now,.. 
-  setInterval(reload,20000)    // ..and then every 20 secs   
+  playerActions();
+  reload();                     // reload right now,.. 
+  setInterval(reload,20000);    // ..and then every 20 secs   
 })

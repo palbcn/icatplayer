@@ -18,9 +18,13 @@
     <p id="playing-artist" class="artist">Currently</p>
     <p id="playing-song" class="song">playing</p>
   </div>
-  <div id="player">    
-    <iframe width="133px" height="60px" frameborder="0" scrolling="no" allowfullscreen="" src="http://www.catradio.cat/directes/icat_http.m3u">
-	  </iframe>
+  <div id="player-container">  
+    <audio id="player" autoplay>
+      <source src="http://icatfm.ccma.audioemotion.stream.flumotion.com/ccma/icatfm.mp3">
+    </audio>
+    <button id="player-play" title="play" disabled="true"><i class="fa fa-lg fa-play"></i> </button>
+    <button id="player-pause" title="pause"><i class="fa fa-lg fa-pause"></i> </button>
+    <button id="player-mute" title="mute" ><i class="fa fa-lg fa-volume-up "></i> </button>
   </div>
 </div>
 </header>
