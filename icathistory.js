@@ -4,13 +4,15 @@
  Lo Pere, Barcelona. palbcn@yahoo.com
 */
 
-let fs=require('fs');
-let path=require('path');
-let os=require('os');
-var scraper = require('./icatscraper');
+const fs=require('fs');
+const path=require('path');
+const os=require('os');
+const scraper = require('./icatscraper');
 
-var played=[]  // previously played songs list
-var playing={} // currently playing song
+const express = require('express');
+
+let played=[]  // previously played songs list
+let playing={} // currently playing song
 
 // --- date time format --------------------------------------------
 function ymdhm(ts) {
@@ -37,7 +39,6 @@ const MAGENTA=esc(35);
 const CYAN=esc(36);
 const WHITE=esc(37);
 
-
 // --- main --------------------------------------------------------
 
 (function main(){  
@@ -61,9 +62,9 @@ const WHITE=esc(37);
   played.sort( (a,b)=> a.timestamp-b.timestamp );  
   played = played.filter( (e,i) => (i==0)||(e.artist!=played[i-1].artist)||(e.title!=played[i-1].title));
   
-  console.log('Recording play history of icat.cat into ',CYAN+
-  icatfn,WHITE+played.length+RESET,'songs'); 
-  
+  console.log('Recording play history of icat.cat into ',YELLOW+
+  icatfn,WHITE+played.length+RESET,'songs');
+ 
   played.forEach( s => saySong(s) );    
   
   (function nowAndEvery10secs(func){
@@ -71,14 +72,30 @@ const WHITE=esc(37);
     setInterval(func,10000); // ..and every 10secs, invoke..
   }) ( function () {         // this function
     scraper(function(err,song) {
-      if (err) return;    
-      if ( !played[0] || (played[0].id!=song.id) && // if not already inserted 
+      if (err) return; 
+      let lastplayed = played[played.length-1];      
+      if ( !lastplayed || (lastplayed.id!=song.id) && // if not already inserted 
           (song.artist!=="?") &&     // only if valid song, not a news clip
           (song.title.toLowerCase().indexOf("icat ")!=0) ) {  // and not an ad does not begin with icat
         saySong(song);
-        played.unshift(song);          // insert at first position 
+        played.push(song);          // insert at last position 
         fs.writeFileSync(icatfn, JSON.stringify(played), "utf-8"); // save to disk
       }       
     });
-  });    
+  }); 
+  
+  let app = express(); 
+  app.use(express.static(path.join(__dirname, 'public'), 
+    {index: 'icathistoryviewer.html'}));
+  app.get('/history', function (req, res) {
+    res.send(played);
+  });  
+  let server = app.listen(process.env.PORT || 32104, function () {
+    process.stdout.write(`
+iCat history server ${YELLOW}${process.argv[1]}${RESET} 
+is now open for e-business
+at ${YELLOW}localhost:${server.address().port}${RESET}
+`   );
+  });  
+  
 })()

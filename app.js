@@ -188,7 +188,7 @@ function colorLog(c,s) {
 }
 
 // -----------------------------------------------
-var lastID=0;
+let lastID=0;
 
 function scrape() {
   loadFromURL(ARAFEM_URL, (err,json) => {
