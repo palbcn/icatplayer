@@ -10,6 +10,7 @@ const os=require('os');
 const scraper = require('./icatscraper');
 
 const express = require('express');
+const morgan = require('morgan');
 
 let played=[]  // previously played songs list
 let playing={} // currently playing song
@@ -91,11 +92,11 @@ const WHITE=esc(37);
     res.send(played);
   });  
   let hostname = os.hostname();
-  let server = app.listen(process.env.PORT || 32104, hostname, function () {
+  let server = app.listen(process.env.PORT || 32104, function () {
     process.stdout.write(`
 iCat history server ${YELLOW}${process.argv[1]}${RESET} 
 is now open for e-business
-at ${YELLOW}${hostname}(${server.address().address}):${server.address().port}${RESET}
+at ${YELLOW}${hostname}:${server.address().port}${RESET}
 `   );
   });  
   
