@@ -6,9 +6,12 @@
 <link rel="shortcut icon" href="icaticon.png" />
 </head>
 <body>
+<header>
 <a target="_blank" href="http://catradio.cat/icat">
 <img id="logo" src="icat.png"></img>
 </a>
+<p id="info"></p>
+</header>
 <ul id="played">
 </ul>
 </body>
@@ -53,9 +56,15 @@ $(function(){
       $("#played").append(buildSong(song));
     })
   }
-
+  function setInfo(info) {
+    console.log(info);
+    $("#info").text(new Date(info.started).toLocaleString('en-GB').slice(0,-3));    
+  }
+       
+  $.getJSON('/info',setInfo);
+  
   $.getJSON('/history',rebuildSongs);
-   
+
   
 })
 

@@ -11,8 +11,8 @@ const scraper = require('./icatscraper');
 
 const express = require('express');
 
-let played=[]  // previously played songs list
-let playing={} // currently playing song
+let played=[];  // previously played songs list
+let playing={}; // currently playing song
 
 // --- date time format --------------------------------------------
 function ymdhm(ts) {
@@ -85,8 +85,13 @@ const WHITE=esc(37);
   }); 
   
   let app = express(); 
+  let started = Date.now();
+  
   app.use(express.static(path.join(__dirname, 'public'), 
     {index: 'icathistoryviewer.html'}));
+  app.get('/info', function (req, res) {
+    res.send({ started });
+  }); 
   app.get('/history', function (req, res) {
     res.send(played);
   });  
