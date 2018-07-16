@@ -10,7 +10,6 @@ const os=require('os');
 const scraper = require('./icatscraper');
 
 const express = require('express');
-const morgan = require('morgan');
 
 let played=[]  // previously played songs list
 let playing={} // currently playing song
