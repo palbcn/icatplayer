@@ -86,19 +86,20 @@ const WHITE=esc(37);
   
   let app = express(); 
   let started = Date.now();
+  let hostname = os.hostname();  
+  let serverfn = process.argv[1];  
   
   app.use(express.static(path.join(__dirname, 'public'), 
     {index: 'icathistoryviewer.html'}));
   app.get('/info', function (req, res) {
-    res.send({ started });
+    res.send({ serverfn, icatfn, hostname, started });
   }); 
   app.get('/history', function (req, res) {
     res.send(played);
   });  
-  let hostname = os.hostname();
   let server = app.listen(process.env.PORT || 32104, function () {
     process.stdout.write(`
-iCat history server ${YELLOW}${process.argv[1]}${RESET} 
+iCat history server ${YELLOW}${serverfn}${RESET} 
 is now open for e-business
 at ${YELLOW}${hostname}:${server.address().port}${RESET}
 `   );

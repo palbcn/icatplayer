@@ -2,6 +2,7 @@
 <head>
 <meta charset="utf-8">
 <title>iCat history viewer</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="style.css">
 <link rel="shortcut icon" href="icaticon.png" />
 </head>
@@ -10,10 +11,14 @@
 <a target="_blank" href="http://catradio.cat/icat">
 <img id="logo" src="icat.png"></img>
 </a>
-<p id="info"></p>
+<p id="info-songs"></p>
 </header>
 <ul id="played">
 </ul>
+
+<footer>
+<p id="info-server"></p>
+</footer>
 </body>
 
 <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
@@ -32,6 +37,8 @@ $(function(){
 
   const YOUTUBESEARCH="https://www.youtube.com/results?search_query=";
 
+  let dmy = ts => new Date(ts).toLocaleString('en-GB').slice(0,-3);
+  
   function buildSong(song) {
     var $li=$('<li id="'+song.timestamp+'"/>');
     var $a=$('<a target="_blank"/>')
@@ -40,7 +47,7 @@ $(function(){
       .attr('src',song.cover);
     $a.append($img);  
     $a.append($('<p class="timestamp">')
-      .text(new Date(song.timestamp).toLocaleString('en-GB').slice(0,-3)));          
+      .text(dmy(song.timestamp)));          
     $a.append($('<p class="artist">')
       .html(song.artist.wbr()));
     $a.append($('<p class="song">')
@@ -51,14 +58,20 @@ $(function(){
 
   function rebuildSongs(songs) {
     console.log(songs);
-    $("#played").empty()
+    
+    let firstd = dmy(songs[0].timestamp);
+    let lastd = dmy(songs[songs.length-1].timestamp);
+    
+    $("#info-songs").text(`${songs.length} songs from ${firstd} to ${lastd}`);    
+    
+    $("#played").empty();
     songs.map(function(song){
       $("#played").append(buildSong(song));
     })
   }
   function setInfo(info) {
     console.log(info);
-    $("#info").text(new Date(info.started).toLocaleString('en-GB').slice(0,-3));    
+    $("#info-server").text(`${info.serverfn} serving ${info.icatfn} at ${info.hostname} since ${dmy(info.started)}`);    
   }
        
   $.getJSON('/info',setInfo);

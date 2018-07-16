@@ -12,7 +12,7 @@ body {
   background: #000; 
   color: #ccc; 
   font-size: 16px;
-  min-width: 600px;
+  --min-width: 600px;
   font-family: "Roboto", sans-serif; 
   font-weight: 300;    
   font-size: 16px;
@@ -117,8 +117,6 @@ img {
   #played li {
    position:relative;
    display:inline-block;
-   width: 200px;           /* golden ratio */
-   height: 123px;
    margin-right: 12px;
    margin-bottom: 12px;
    border-top: 1px solid #999;
@@ -126,6 +124,27 @@ img {
    padding-top: 6px;
    overflow: hidden;
   }
+  
+  @media (max-width: 419px) {   
+    #played li {
+     width: 99%;
+    }  
+  }
+  
+  @media (min-width: 420px) {   
+    #played li {
+     width: 47%;
+    }  
+  }  
+  
+  @media (min-width: 650px) {   
+    #played li {
+     width: 200px;          
+     height: 123px;
+    }
+  }  
+
+  
   
   #played li:hover  {
    background-color: #300;
