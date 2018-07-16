@@ -90,11 +90,12 @@ const WHITE=esc(37);
   app.get('/history', function (req, res) {
     res.send(played);
   });  
-  let server = app.listen(process.env.PORT || 32104, function () {
+  let hostname = os.hostname();
+  let server = app.listen(process.env.PORT || 32104, hostname, function () {
     process.stdout.write(`
 iCat history server ${YELLOW}${process.argv[1]}${RESET} 
 is now open for e-business
-at ${YELLOW}localhost:${server.address().port}${RESET}
+at ${YELLOW}${hostname}(${server.address().address}):${server.address().port}${RESET}
 `   );
   });  
   
