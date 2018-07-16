@@ -57,10 +57,9 @@ $(function(){
   };
 
   function rebuildSongs(songs) {
-    console.log(songs);
-    
-    let firstd = dmy(songs[0].timestamp);
-    let lastd = dmy(songs[songs.length-1].timestamp);
+    songs.sort( (a,b)=> b.timestamp-a.timestamp );    
+    let firstd = dmy(songs[songs.length-1].timestamp);
+    let lastd = dmy(songs[0].timestamp);
     
     $("#info-songs").text(`${songs.length} songs from ${firstd} to ${lastd}`);    
     
