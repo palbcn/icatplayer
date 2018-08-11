@@ -125,7 +125,8 @@ function loadFromURL(url,cb){
 };
 
 function logerror(err) {
-  console.error(err.response
+  if (err)
+    console.error(err.response
     ?err.response.request.method+' '+err.response.request.url+' '+err.status
     :err); 
 }
@@ -221,7 +222,7 @@ function scrape() {
           sharp(buffer).resize(200).toBuffer( (err,data) => {
             if (!err) song.cover = datauris.fromBuffer(data,contenttype);
             played.unshift(song);          // insert at first position 
-            fs.writeFileSync(icatfn, JSON.stringify(played), "utf-8"); // save to disk
+            fs.writeFile(icatfn, JSON.stringify(played), "utf-8", logerror ); // save to disk
           }); 
         });             
       }     

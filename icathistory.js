@@ -72,8 +72,8 @@ const WHITE=esc(37);
     setInterval(func,10000); // ..and every 10secs, invoke..
   }) ( function () {         // this function
     scraper(function(err,song) {
-      if (err) return; 
-      let lastplayed = played[played.length-1];      
+      if (err) return console.error(err); 
+      let lastplayed = played[played.length-1];
       if ( !lastplayed || (lastplayed.id!=song.id) && // if not already inserted 
           (song.artist!=="?") &&     // only if valid song, not a news clip
           (song.title.toLowerCase().indexOf("icat ")!=0) ) {  // and not an ad does not begin with icat

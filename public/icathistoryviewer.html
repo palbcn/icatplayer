@@ -73,10 +73,8 @@ $(function(){
     $("#info-server").text(`${info.serverfn} serving ${info.icatfn} at ${info.hostname} since ${dmy(info.started)}`);    
   }
        
-  $.getJSON('/info',setInfo);
-  
+  $.getJSON('/info',setInfo);  
   $.getJSON('/history',rebuildSongs);
-
   
 })
 
