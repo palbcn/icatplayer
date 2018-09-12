@@ -1,6 +1,6 @@
 #! node
 /*
- record play history of icat 
+ record the play history of icat 
  Lo Pere, Barcelona. palbcn@yahoo.com
 */
 

@@ -4,31 +4,31 @@
  Lo Pere, Barcelona. palbcn@yahoo.com
 */
 
-var fs=require('fs')
-var path=require('path')
-var os=require('os')
-var superagent = require('superagent')
+const fs=require('fs')
+const path=require('path')
+const os=require('os')
+const superagent = require('superagent')
 require('superagent-charset')(superagent)
-var $ = require('cheerio')
-var express = require('express');
+const $ = require('cheerio')
+const express = require('express');
 const sharp = require('sharp');
 const datauris = require('datauris'); 
     
-var app = express();
+let app = express();
 
 const ARAFEM_URL = "http://dinamics.ccma.cat/public/apps/catradio/v2/arafem/arafem_ic.json";
 const BLANKIMAGE = "noimage.jpg";
  
-var played=[]  // previously played songs list
-var playing={} // currently playing song
-var icatfn = 'icat.json'; 
+let played=[]  // previously played songs list
+let playing={} // currently playing song
+let icatfn = 'icat.json'; 
 
-var favorites=[]
-var favsfn = 'favorites.json'
+let favorites=[]
+let favsfn = 'favorites.json'
 
 // --- played list utils  ----------------------------------------------
 function findSongInList(song,list) {
-  for (var i=0,l=list.length; i<l; i++) {
+  for (let i=0,l=list.length; i<l; i++) {
     if ((list[i].title==song.title)&&(list[i].artist==song.artist)) {
       return i;
     }
@@ -37,7 +37,7 @@ function findSongInList(song,list) {
 }
 
 function findIdInList(id,list) {
-  for (var i=0,l=list.length; i<l; i++) {
+  for (let i=0,l=list.length; i<l; i++) {
     if (list[i].timestamp==id) {
       return i;
     }
@@ -75,7 +75,7 @@ app.get('/favorites', function (req, res) {
 
 app.delete('/played/:id',function(req,res) {
   console.time('delete '+req.params.id);
-  var index=findIdInList(req.params.id,played);
+  let index=findIdInList(req.params.id,played);
   if (index==-1) {
     res.status(404).send(req.params.id+" not found");
   } else {
@@ -87,7 +87,7 @@ app.delete('/played/:id',function(req,res) {
 })
 
 app.post('/like/:id', function (req, res) {
-  var index=findIdInList(req.params.id,played)
+  let index=findIdInList(req.params.id,played)
   if (index==-1) { 
     console("404 "+req.params.id+" not found");
     return res.status(404).send(req.params.id+" not found");
@@ -95,7 +95,7 @@ app.post('/like/:id', function (req, res) {
   console.time('like '+req.params.id)
  
   played[index].like = !played[index].like;
-  var reqsong = {
+  let reqsong = {
     artist: played[index].artist,
     title: played[index].title
   }
@@ -159,7 +159,7 @@ function abbrev(s,n,ellipsis) {
 // -----------------------------------------------
 function repeatChar(c,n) {
   let r = '';
-  for (var i=0; i<n; i++) r+=c;
+  for (let i=0; i<n; i++) r+=c;
   return r;
 }
 
@@ -194,10 +194,10 @@ let lastID=0;
 function scrape() {
   loadFromURL(ARAFEM_URL, (err,json) => {
     if (err) return logerror(err);
-    var d = JSON.parse(json);
+    let d = JSON.parse(json);
     if (d.canal && d.canal.ara_fem && d.canal.ara_fem.arasona &&
         (d.canal.ara_fem.arasona.bloc_id != lastID)) {
-      var song= { 
+      let song= { 
         id: d.canal.ara_fem.arasona.bloc_id,  
         artist: adjust(d.canal.ara_fem.arasona.interpret), 
         title: adjust(d.canal.ara_fem.arasona.tema), 
@@ -205,7 +205,7 @@ function scrape() {
         timestamp: Date.now()  
       };
       playing=song;         // show as currently played
-      var idx=findSongInList(song,played); 
+      let idx=findSongInList(song,played); 
       song.like = (idx==-1) ? false : played[idx].like;  
       let t = Math.floor(Date.now()/1000);
       let tstl = (t+' '+song.artist+' - '+song.title).length;
@@ -248,9 +248,9 @@ function scrape() {
   if (!fs.existsSync(icatfn)) return console.error(icatfn+' not found');
   if (!fs.existsSync(favsfn)) return console.error(favsfn+' not found');
   
-  var data = fs.readFileSync(icatfn, "utf-8")
+  let data = fs.readFileSync(icatfn, "utf-8")
   if (!data) return console.error("can't read "+icatfn);
-  var parsed=JSON.parse(data);
+  let parsed=JSON.parse(data);
   if (!Array.isArray(parsed)) return console.error('invalid '+icatfn) 
   played = parsed;
   playing = played[0];
@@ -264,7 +264,7 @@ function scrape() {
   scrape();                  // now,.. 
   setInterval(scrape,10000); // ..and every 10 secs  
 
-  var server = app.listen(process.env.PORT || 3210, function () {
+  let server = app.listen(process.env.PORT || 3210, function () {
     process.stdout.write(`
 iCat server ${YELLOW}${process.argv[1]}${RESET} is now open for e-business
 using ${YELLOW}${icatfn}${RESET} 
