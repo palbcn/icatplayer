@@ -101,8 +101,8 @@ const WHITE=esc(37);
   let port = process.env.PORT || 32104;
   let server = app.listen(port, function () {
     process.stdout.write(`
-iCat history server ${YELLOW}${serverfn}${RESET} 
-is now ${CYAN}${ymdhm(started)}${RESET} open for e-business
+iCat history server ${YELLOW}${serverfn}${RESET} (pid:${process.pid})
+is now (${CYAN}${ymdhm(started)}${RESET}) open for e-business
 at ${YELLOW}${hostname}:${server.address().port}${RESET}
 `   );
 
