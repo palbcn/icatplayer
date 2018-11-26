@@ -93,7 +93,7 @@ const WHITE=esc(37);
   app.use(express.static(path.join(__dirname, 'public'), 
     {index: 'icathistoryviewer.html'}));
   app.get('/info', function (req, res) {
-    res.send({ serverfn, icatfn, hostname, started });
+    res.send({ serverfn, icatfn, hostname, started, pid:process.pid });
   }); 
   app.get('/history', function (req, res) {
     res.send(played);
