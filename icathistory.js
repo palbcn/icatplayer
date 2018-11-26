@@ -67,10 +67,11 @@ const WHITE=esc(37);
  
   played.forEach( s => saySong(s) );    
   
-  (function nowAndEvery10secs(func){
-    func();                  // now...
-    setInterval(func,10000); // ..and every 10secs, invoke..
-  }) ( function () {         // this function
+  (function nowAndEveryNsecs(func){
+    const Nsecs=30;      // every 30 seconds
+    func();                       // now..
+    setInterval(func,Nsecs*1000); // ..and every N secs, invoke..
+  }) ( function () {              // ..this function
     scraper(function(err,song) {
       if (err) return console.error(err); 
       let lastplayed = played[played.length-1];
@@ -82,7 +83,7 @@ const WHITE=esc(37);
         fs.writeFileSync(icatfn, JSON.stringify(played), "utf-8"); // save to disk
       }       
     });
-  }); 
+  }, 30); 
   
   let app = express(); 
   let started = Date.now();
@@ -101,9 +102,19 @@ const WHITE=esc(37);
   let server = app.listen(port, function () {
     process.stdout.write(`
 iCat history server ${YELLOW}${serverfn}${RESET} 
-is now open for e-business
+is now ${CYAN}${ymdhm(started)}${RESET} open for e-business
 at ${YELLOW}${hostname}:${server.address().port}${RESET}
 `   );
+
+
+/*
+  recommended startup, add to crontab  
+       @reboot NODE_ENV=production; /usr/local/bin/node /home/pi/icat/icathistory >> /home/pi/icat.log &
+  
+  and then...
+       tail /home/pi/icat.log -f
+
+*/
 
   if (app.get('env') =='development') {
       let browserSync = require('browser-sync');
@@ -112,9 +123,7 @@ at ${YELLOW}${hostname}:${server.address().port}${RESET}
         browser: "chrome",
         files: ["public/*"]
       });
-    }
-    
-    
+    }    
   });  
   
 })()
