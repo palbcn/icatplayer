@@ -263,8 +263,12 @@ function scrape() {
  
   scrape();                  // now,.. 
   setInterval(scrape,10000); // ..and every 10 secs  
-
-  let server = app.listen(process.env.PORT || 3210, function () {
+  
+  
+  
+  let port = process.env.PORT || 3210; 
+  let server = app.listen(port, function() {
+    process.title='iCat server using '+icatfn+' and '+favsfn+'at localhost:'+server.address().port;    
     process.stdout.write(`
 iCat server ${YELLOW}${process.argv[1]}${RESET} is now open for e-business
 using ${YELLOW}${icatfn}${RESET} 
@@ -272,6 +276,15 @@ and ${YELLOW}${favsfn}${RESET}
 at ${CYAN}localhost:${server.address().port}${RESET}
 
 `);
-  })
+    if (app.get('env') =='development') {
+      let browserSync = require('browser-sync');
+      browserSync.init({
+        proxy:"localhost:"+port,
+        browser: "chrome",
+        files: ["public/*"]
+      });
+    }
+  });
+
  
 })()

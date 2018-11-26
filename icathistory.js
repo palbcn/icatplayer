@@ -97,12 +97,24 @@ const WHITE=esc(37);
   app.get('/history', function (req, res) {
     res.send(played);
   });  
-  let server = app.listen(process.env.PORT || 32104, function () {
+  let port = process.env.PORT || 32104;
+  let server = app.listen(port, function () {
     process.stdout.write(`
 iCat history server ${YELLOW}${serverfn}${RESET} 
 is now open for e-business
 at ${YELLOW}${hostname}:${server.address().port}${RESET}
 `   );
+
+  if (app.get('env') =='development') {
+      let browserSync = require('browser-sync');
+      browserSync.init({
+        proxy:"localhost:"+port,
+        browser: "chrome",
+        files: ["public/*"]
+      });
+    }
+    
+    
   });  
   
 })()
