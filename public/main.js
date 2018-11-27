@@ -10,8 +10,9 @@ var persist = {
 };
 
 /* ----------------- insert word breaks in long words at num pos --- */
-String.prototype.wbr = function(num) {  
-    var r =  this.replace ( RegExp("(\\w{" + (num?num:10) + "})(\\w)", "g"),
+//String.prototype.wbr = function(num) {  
+function wbr(s,num) {  
+    var r =  s.replace ( RegExp("(\\w{" + (num?num:10) + "})(\\w)", "g"),
     function(match,submatch1,submatch2){
       return submatch1 + "<wbr>" + submatch2
     }
@@ -114,9 +115,9 @@ function buildSong(song) {
   $a.append($('<p class="timestamp">')
     .text(new Date(song.timestamp).toLocaleString('en-GB').slice(0,-3)));          
   $a.append($('<p class="artist">')
-    .html(song.artist.wbr()));
+    .html(wbr(song.artist)));
   $a.append($('<p class="song">')
-    .html(song.title.wbr()));
+    .html(wbr(song.title)));
   $li.append($a);
   var $iconlike=$('<i title="'+((song.like)?'unlike':'like')+
     '" class="fa '+((song.like)?'fa-thumbs-down':'fa-thumbs-up')+
@@ -144,8 +145,8 @@ function buildSong(song) {
 /* -------------------------------------- presentation functions --- */
 function buildPlaying(data) {
   $("#playing-cover img").attr('src',data.cover?data.cover:'noimage.jpg')
-  $("#playing-artist").html(data.artist.wbr()); 
-  $("#playing-song").html(data.title.wbr());
+  $("#playing-artist").html(wbr(data.artist)); 
+  $("#playing-song").html(wbr(data.title));
   document.title = data.artist+' - '+data.title+' @ iCat.cat & Lo Pere';
 }
 

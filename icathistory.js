@@ -119,10 +119,9 @@ at ${YELLOW}${hostname}:${server.address().port}${RESET}
 
 /*
   recommended startup, add to crontab  
-       @reboot NODE_ENV=production; /usr/local/bin/node /home/pi/icat/icathistory >> /home/pi/icat.log &
+       @reboot /usr/local/bin/node /home/pi/icat/icathistory >> /home/pi/icat.log &
   
   or 
-      NODE_ENV=production 
       @reboot /usr/local/bin/forever /home/pi/icat/icathistory
       
   and then...
