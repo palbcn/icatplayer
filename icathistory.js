@@ -14,6 +14,16 @@ const express = require('express');
 let played=[];  // previously played songs list
 let playing={}; // currently playing song
 
+// --- return true if name is available as a node module -----------
+function moduleIsAvailable(name) {
+  try {
+    require.resolve(name);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+  
 // --- date time format --------------------------------------------
 function ymdhm(ts) {
   let z = v => v < 10 ? "0" + v : v;
@@ -111,12 +121,16 @@ at ${YELLOW}${hostname}:${server.address().port}${RESET}
   recommended startup, add to crontab  
        @reboot NODE_ENV=production; /usr/local/bin/node /home/pi/icat/icathistory >> /home/pi/icat.log &
   
+  or 
+      NODE_ENV=production 
+      @reboot /usr/local/bin/forever /home/pi/icat/icathistory
+      
   and then...
        tail /home/pi/icat.log -f
 
 */
-
-  if (app.get('env') =='development') {
+  
+  if ((app.get('env') =='development') && moduleIsAvailable('browser-sync')){
       let browserSync = require('browser-sync');
       browserSync.init({
         proxy:"localhost:"+port,
