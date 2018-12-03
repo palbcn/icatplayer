@@ -11,14 +11,11 @@
 <a target="_blank" href="http://catradio.cat/icat">
 <img id="logo" src="icat.png"></img>
 </a>
+<p id="info-server"></p>
 <p id="info-songs"></p>
 </header>
 <ul id="played">
 </ul>
-
-<footer>
-<p id="info-server"></p>
-</footer>
 </body>
 
 <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
@@ -56,6 +53,9 @@ $(function(){
     return $li;
   };
 
+  /**
+     given the songs directly obtained from $.getJSON() rebuild the list of songs
+  */
   function rebuildSongs(songs) {
     songs.sort( (a,b)=> b.timestamp-a.timestamp );    
     let firstd = dmy(songs[songs.length-1].timestamp);
@@ -68,13 +68,23 @@ $(function(){
       $("#played").append(buildSong(song));
     })
   }
+  
+  /**
+     given the server info directly obtained from $.getJSON() rebuild the server information
+  */
   function setInfo(info) {
     console.log(info);
     $("#info-server").text(`${info.serverfn} serving ${info.icatfn} at ${info.hostname} since ${dmy(info.started)}`);    
   }
-       
+  
+  
+  /** main */
+  function reloadSongs() {
+    $.getJSON('/history',rebuildSongs);
+  }
   $.getJSON('/info',setInfo);  
-  $.getJSON('/history',rebuildSongs);
+  reloadSongs();                     // reload right now,.. 
+  setInterval(reloadSongs,60000);    // ..and then every minute
   
 })
 
