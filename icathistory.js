@@ -54,7 +54,7 @@ const WHITE=esc(37);
 (function main(){  
   function saySong(s) {
     let dt = ymdhm(s.timestamp);
-    process.stdout.write(dt+' '+WHITE+s.artist+RESET+' - '+CYAN+s.title+RESET+'\n')
+    process.stdout.write(GREEN+dt+RESET+' '+WHITE+s.artist+RESET+' - '+CYAN+s.title+RESET+'\n')
   }
 
   let icatfn = path.normalize(path.resolve(

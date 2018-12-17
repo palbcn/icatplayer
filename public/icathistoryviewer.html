@@ -73,12 +73,11 @@ $(function(){
      given the server info directly obtained from $.getJSON() rebuild the server information
   */
   function setInfo(info) {
-    console.log(info);
     $("#info-server").text(`${info.serverfn} serving ${info.icatfn} at ${info.hostname} since ${dmy(info.started)}`);    
   }
   
   
-  /** main */
+  /** and the show begins ... */
   function reloadSongs() {
     $.getJSON('/history',rebuildSongs);
   }

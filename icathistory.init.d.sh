@@ -1,191 +1,105 @@
-#!/bin/sh
+#!/bin/bash
 
 # icathistory server startup script
-# adapted from https://github.com/chovy/node-startup
+# inspired in https://www.npmjs.com/package/initd-forever
+#   which in turn was based on a script posted by https://gist.github.com/jinze
+# and https://github.com/chovy/node-startup
 
 APP_NAME="icathistory"
 USER="pi"
 GROUP="$USER"
+COMMAND="node"
+FOREVER_APP="forever"
+NODE_APP="/home/pi/icat/icathistory.js"
+APP_ARGS="/home/pi/icat.json"
 NODE_ENV="production"
 PORT="32104"
-APP_DIR="/home/pi/icathistory"
-NODE_APP="/home/pi/icat/icathistory.js"
-KWARGS=""
-CONFIG_DIR="$APP_DIR"
-PID_DIR="$APP_DIR/pid"
-PID_FILE="$PID_DIR/$APP_NAME.pid"
-LOG_DIR="$APP_DIR/log"
-LOG_FILE="$LOG_DIR/$APP_NAME.log"
-NODE_EXEC=$(which node)
+PID_FILE="/var/run/icathistory.pid"
+LOG_FILE="/var/run/icathistory.log"
 
-###############
-
-# REDHAT chkconfig header
-
-# chkconfig: - 58 74
-# description: node-app is the script for starting a node app on boot.
+# If you wish the Daemon to be lauched at boot / stopped at shutdown :
+#
+#    On Debian-based distributions:
+#      INSTALL : update-rc.d scriptname defaults
+#      (UNINSTALL : update-rc.d -f  scriptname remove)
+#
+#    On RedHat-based distributions (CentOS, OpenSUSE...):
+#      INSTALL : chkconfig --level 35 scriptname on
+#      (UNINSTALL : chkconfig --level 35 scriptname off)
+#
+#
+# REDHAT chkconfig header ####################################
 ### BEGIN INIT INFO
-# Provides: node
-# Required-Start:    $network $remote_fs $local_fs
-# Required-Stop:     $network $remote_fs $local_fs
+# chkconfig:         2345 90 60
+# Provides:          icathistory
+# Required-Start:    $network $remote_fs $local_fs $syslog
+# Required-Stop:     $network $remote_fs $local_fs $syslog
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: start and stop node
-# Description: Node process for app
+# Short-Description: forever running icathistory.js
+# Description:       forever running icathistory.js
 ### END INIT INFO
 
-###############
-
-USAGE="Usage: $0 {start|stop|restart|status} [--force]"
-FORCE_OP=false
 
 if [ "$(id -u)" != "0" ]; then
    echo "This script must be run as root" 1>&2
    exit 1
-fi
+fi;
 
-pid_file_exists() {
-    [ -f "$PID_FILE" ]
+
+if [ -e /lib/lsb/init-functions ]; then
+        # LSB source function library.
+        . /lib/lsb/init-functions
+fi;
+
+start() {
+   echo "Starting $APP_NAME"
+
+   # Notice that we change the PATH because on reboot
+   # the PATH does not include the path to node.
+   # Launching forever with a full path
+   # does not work unless we set the PATH.
+   PATH=/usr/local/bin:$PATH
+   export NODE_ENV=$NODE_ENV
+   export PORT=$PORT
+   $FOREVER_APP start --pidFile $PID_FILE -l $LOG_FILE -a -d -c $COMMAND $NODE_APP $APP_ARGS
+   RETVAL=$?
 }
 
-get_pid() {
-    echo "$(cat "$PID_FILE")"
+restart() {
+   echo -n "Restarting $APP_NAME"
+   $FOREVER_APP restart $NODE_APP
+   RETVAL=$?
 }
 
-is_running() {
-    PID="$(get_pid)"
-    [ -d /proc/$PID ]
+stop() {
+   echo -n "Shutting down $APP_NAME"
+   $FOREVER_APP stop $NODE_APP
+   RETVAL=$?
 }
 
-start_it() {
-    mkdir -p "$PID_DIR"
-    chown $USER:$GROUP "$PID_DIR"
-    mkdir -p "$LOG_DIR"
-    chown $USER:$GROUP "$LOG_DIR"
-
-    echo "Starting $APP_NAME ..."
-    echo "cd $APP_DIR
-        if [ $? -ne 0 ]; then
-          exit
-        fi
-        set -a
-        PORT=$PORT
-        NODE_ENV=$NODE_ENV
-        NODE_CONFIG_DIR=$CONFIG_DIR
-        $NODE_EXEC \"$APP_DIR\"/$NODE_APP $KWARGS &>> \"$LOG_FILE\" &
-        echo \$! > $PID_FILE" | sudo -i -u $USER
-    echo "$APP_NAME started with pid $(get_pid)"
+status() {
+   echo -n "Status $APP_NAME"
+   $FOREVER_APP list
+   RETVAL=$?
 }
-
-stop_process() {
-    PID=$(get_pid)
-    echo "Killing process $PID"
-    kill $PID
-    wait $PID 2>/dev/null
-}
-
-remove_pid_file() {
-    echo "Removing pid file"
-    rm -f "$PID_FILE"
-}
-
-start_app() {
-    if pid_file_exists
-    then
-        if is_running
-        then
-            PID=$(get_pid)
-            echo "$APP_NAME already running with pid $PID"
-            exit 1
-        else
-            echo "$APP_NAME stopped, but pid file exists"
-            if [ $FORCE_OP = true ]
-            then
-                echo "Forcing start anyways"
-                remove_pid_file
-                start_it
-            fi
-        fi
-    else
-        start_it
-    fi
-}
-
-stop_app() {
-    if pid_file_exists
-    then
-        if is_running
-        then
-            echo "Stopping $APP_NAME ..."
-            stop_process
-            remove_pid_file
-            echo "$APP_NAME stopped"
-        else
-            echo "$APP_NAME already stopped, but pid file exists"
-            if [ $FORCE_OP = true ]
-            then
-                echo "Forcing stop anyways ..."
-                remove_pid_file
-                echo "$APP_NAME stopped"
-            else
-                exit 1
-            fi
-        fi
-    else
-        echo "$APP_NAME already stopped, pid file does not exist"
-        exit 1
-    fi
-}
-
-status_app() {
-    if pid_file_exists
-    then
-        if is_running
-        then
-            PID=$(get_pid)
-            echo "$APP_NAME running with pid $PID"
-        else
-            echo "$APP_NAME stopped, but pid file exists"
-        fi
-    else
-        echo "$APP_NAME stopped"
-    fi
-}
-
-case "$2" in
-    --force)
-        FORCE_OP=true
-    ;;
-
-    "")
-    ;;
-
-    *)
-        echo $USAGE
-        exit 1
-    ;;
-esac
 
 case "$1" in
-    start)
-        start_app
-    ;;
-
-    stop)
-        stop_app
-    ;;
-
-    restart)
-        stop_app
-        start_app
-    ;;
-
-    status)
-        status_app
-    ;;
-
-    *)
-        echo $USAGE
+   start)
+        start
+        ;;
+   stop)
+        stop
+        ;;
+   status)
+        status
+        ;;
+   restart)
+        restart
+        ;;
+   *)
+        echo "Usage:  {start|stop|status|restart}"
         exit 1
-    ;;
+        ;;
 esac
+exit $RETVAL
