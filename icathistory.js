@@ -54,7 +54,7 @@ const WHITE=esc(37);
 (function main(){  
   function saySong(s) {
     let dt = ymdhm(s.timestamp);
-    process.stdout.write(GREEN+dt+RESET+' '+WHITE+s.artist+RESET+' - '+CYAN+s.title+RESET+'\n')
+    console.log(GREEN+dt+RESET+' '+WHITE+s.artist+RESET+' - '+CYAN+s.title+RESET)
   }
 
   let icatfn = path.normalize(path.resolve(
@@ -72,10 +72,14 @@ const WHITE=esc(37);
   played.sort( (a,b)=> a.timestamp-b.timestamp );  
   played = played.filter( (e,i) => (i==0)||(e.artist!=played[i-1].artist)||(e.title!=played[i-1].title));
   
-  console.log('Recording play history of icat.cat into ',YELLOW+
-  icatfn,WHITE+played.length+RESET,'songs');
- 
-  played.forEach( s => saySong(s) );    
+  console.log(
+`Recording play history of icat.cat into ${YELLOW+icatfn+RESET} 
+Previously recorded ${WHITE+played.length+RESET}songs`);
+  if (played.length>0) console.log(
+`from ${YELLOW+ymdhm(played[0].timestamp)+RESET} (${played[0].artist} - ${played[0].title})
+to   ${YELLOW+ymdhm(played[played.length-1].timestamp)+RESET} (${played[played.length-1].artist} - ${played[played.length-1].title})`);
+
+  //played.forEach( s => saySong(s) );    
   
   (function nowAndEveryNsecs(func){
     const Nsecs=30;      // every 30 seconds
@@ -118,15 +122,7 @@ at ${YELLOW}${hostname}:${server.address().port}${RESET}
 
 
 /*
-  recommended startup, add to crontab  
-       @reboot /usr/local/bin/node /home/pi/icat/icathistory >> /home/pi/icat.log &
-  
-  or 
-      @reboot /usr/local/bin/forever /home/pi/icat/icathistory
-      
-  and then...
-       tail /home/pi/icat.log -f
-
+  see icathistory.init.d.sh for the startup script
 */
   
   if ((app.get('env') =='development') && moduleIsAvailable('browser-sync')){

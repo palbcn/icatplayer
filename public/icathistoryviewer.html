@@ -36,7 +36,7 @@ $(function(){
 
   let dmy = ts => new Date(ts).toLocaleString('en-GB').slice(0,-3);
   
-  function buildSong(song) {
+  function buildSong(song,index) {
     var $li=$('<li id="'+song.timestamp+'"/>');
     var $a=$('<a target="_blank"/>')
       .attr('href',YOUTUBESEARCH+encodeURIComponent(song.artist+' - '+song.title+' - '));
@@ -44,7 +44,7 @@ $(function(){
       .attr('src',song.cover);
     $a.append($img);  
     $a.append($('<p class="timestamp">')
-      .text(dmy(song.timestamp)));          
+      .text(""+index+" "+dmy(song.timestamp)));          
     $a.append($('<p class="artist">')
       .html(song.artist.wbr()));
     $a.append($('<p class="song">')
@@ -64,8 +64,8 @@ $(function(){
     $("#info-songs").text(`${songs.length} songs from ${firstd} to ${lastd}`);    
     
     $("#played").empty();
-    songs.map(function(song){
-      $("#played").append(buildSong(song));
+    songs.map(function(song,index){
+      $("#played").append(buildSong(song,index+1));
     })
   }
   
@@ -83,7 +83,7 @@ $(function(){
   }
   $.getJSON('/info',setInfo);  
   reloadSongs();                     // reload right now,.. 
-  setInterval(reloadSongs,60000);    // ..and then every minute
+  setInterval(reloadSongs,120000);    // ..and then every two minutes
   
 })
 
