@@ -1,4 +1,3 @@
-#! node
 /*
  record the play history of icat 
  Lo Pere, Barcelona. palbcn@yahoo.com
@@ -74,13 +73,22 @@ const WHITE=esc(37);
   
   console.log(
 `Recording play history of icat.cat into ${YELLOW+icatfn+RESET} 
-Previously recorded ${WHITE+played.length+RESET}songs`);
+Previously recorded ${YELLOW+played.length+RESET} songs`);
   if (played.length>0) console.log(
-`from ${YELLOW+ymdhm(played[0].timestamp)+RESET} (${played[0].artist} - ${played[0].title})
-to   ${YELLOW+ymdhm(played[played.length-1].timestamp)+RESET} (${played[played.length-1].artist} - ${played[played.length-1].title})`);
+`from ${GREEN+ymdhm(played[0].timestamp)+RESET} ${WHITE+played[0].artist+RESET} - ${CYAN+played[0].title+RESET}
+  to ${GREEN+ymdhm(played[played.length-1].timestamp)+RESET} ${WHITE+played[played.length-1].artist+RESET} - ${CYAN+played[played.length-1].title+RESET}`);
 
-  //played.forEach( s => saySong(s) );    
+  //played.forEach( s => saySong(s) ); 
   
+  let app = express(); 
+  let started = Date.now();
+  let lastScrape = started;  
+  let hostname = os.hostname();  
+  let serverfn = process.argv[1];  
+  
+  /** 
+  * scraper function runs every nsecs
+  */
   (function nowAndEveryNsecs(func){
     const Nsecs=30;      // every 30 seconds
     func();                       // now..
@@ -88,8 +96,9 @@ to   ${YELLOW+ymdhm(played[played.length-1].timestamp)+RESET} (${played[played.l
   }) ( function () {              // ..this function
     scraper(function(err,song) {
       if (err) return console.error(err); 
-      let lastplayed = played[played.length-1];
-      if ( !lastplayed || (lastplayed.id!=song.id) && // if not already inserted 
+      lastScrape = Date.now(); 
+      let lastPlayed = played[played.length-1];
+      if ( !lastPlayed || (lastPlayed.id!=song.id) && // if not already inserted 
           (song.artist!=="?") &&     // only if valid song, not a news clip
           (song.title.toLowerCase().indexOf("icat ")!=0) ) {  // and not an ad does not begin with icat
         saySong(song);
@@ -99,15 +108,10 @@ to   ${YELLOW+ymdhm(played[played.length-1].timestamp)+RESET} (${played[played.l
     });
   }, 30); 
   
-  let app = express(); 
-  let started = Date.now();
-  let hostname = os.hostname();  
-  let serverfn = process.argv[1];  
-  
   app.use(express.static(path.join(__dirname, 'public'), 
     {index: 'icathistoryviewer.html'}));
   app.get('/info', function (req, res) {
-    res.send({ serverfn, icatfn, hostname, started, pid:process.pid });
+    res.send({ serverfn, icatfn, hostname, started, pid:process.pid, lastScrape });
   }); 
   app.get('/history', function (req, res) {
     res.send(played);

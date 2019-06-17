@@ -52,9 +52,23 @@ $(function(){
     $li.append($a);
     return $li;
   };
+  
+  function scrollSongs(songs) {
+    /* .offset() current coordinates of element relative to the document.*/
+    /* .position() current coordinates of element relative to the document.*/
+    
+        
+    /* !!!!!!!!!!!!!!!!!!! 
+    let headerheight = $("header").height();
+    var hb = $("header").offset().top - headerheight;
+    let bottomPos = $(document).height() - ($(window).scrollTop() + $(window).height());
+    let limit= bottomPos - headerHeight div song height modulo songs per row;  
+    let displaySongs = allSongs.slice(0,limit);
+    */
+  }  
 
   /**
-     given the songs directly obtained from $.getJSON() rebuild the list of songs
+     given the songs directly obtained from $.getJSON() rebuild the list of songs     
   */
   function rebuildSongs(songs) {
     songs.sort( (a,b)=> b.timestamp-a.timestamp );    
@@ -62,7 +76,7 @@ $(function(){
     let lastd = dmy(songs[0].timestamp);
     
     $("#info-songs").text(`${songs.length} songs from ${firstd} to ${lastd}`);    
-    
+    songs = songs.slice(0,100); // temporary patch until above code works
     $("#played").empty();
     songs.map(function(song,index){
       $("#played").append(buildSong(song,index+1));
@@ -84,6 +98,9 @@ $(function(){
   $.getJSON('/info',setInfo);  
   reloadSongs();                     // reload right now,.. 
   setInterval(reloadSongs,120000);    // ..and then every two minutes
+  
+  /* also when the window scrolls, we might need to redisplay more songs */  
+  $(window).scroll(scrollSongs);
   
 })
 
